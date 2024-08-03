@@ -1,0 +1,5 @@
+export const bgButton1 = '#130160'
+export const bgButton2 = '#D6CDFE'
+export const orange = '#FCA34D'
+export const item = '#737376'
+export const white = 'white'
