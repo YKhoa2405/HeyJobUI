@@ -6,10 +6,10 @@ import { bgButton1, bgButton2, orange, white } from "../../assets/theme/color";
 import ButtonMain from "../../components/ButtonMain";
 export default function ForgotPass({navigation}) {
     return (
-        <View style={styleShare.container}>
+        <View style={[styleShare.container,{marginHorizontal:20}]}>
             <View style={styles.containerTop}>
                 <Text style={styleShare.titleText}>Quên mật khẩu?</Text>
-                <Text style={styles.desc}>Để đặt lại mật khẩu, bạn cần email đã đăng ký có thể xác thực,</Text>
+                <Text style={styles.desc}>Để đặt lại mật khẩu, bạn cần email để xác thực</Text>
                 <Image style={styleShare.imageLogin} source={require("../../assets/images/forgotPass.png")} />
             </View>
             <View>

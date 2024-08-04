@@ -6,7 +6,7 @@ import { bgButton1, bgButton2, orange, white } from "../../assets/theme/color";
 import ButtonMain from "../../components/ButtonMain";
 export default function Login({navigation}) {
     return (
-        <View style={styleShare.container}>
+        <View style={[styleShare.container,{marginHorizontal:20}]}>
             <View style={styles.containerTop}>
                 <Text style={styleShare.titleText}>Chào mừng trở lại</Text>
                 <Text style={styles.desc}>Đăng nhập tài khoản để tìm kiếm công việc mở ước,</Text>
@@ -31,7 +31,8 @@ export default function Login({navigation}) {
             <View style={styles.containerFooter}>
                 <ButtonMain title={'Đăng nhập'}
                     backgroundColor={bgButton1}
-                    textColor={white} />
+                    textColor={white}
+                    onPress={() => navigation.navigate('MainStack')} />
                 <View style={styleShare.lineContainer}>
                     <View style={styleShare.line}></View>
                     <Text style={styleShare.lineText}>hoặc đăng nhập bằng</Text>

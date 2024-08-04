@@ -6,7 +6,7 @@ import { bgButton1, bgButton2, orange, white } from "../../assets/theme/color";
 import ButtonMain from "../../components/ButtonMain";
 export default function Register({navigation}) {
     return (
-        <View style={styleShare.container}>
+        <View style={[styleShare.container,{marginHorizontal:20}]}>
             <View style={styles.containerTop}>
                 <Text style={styleShare.titleText}>Đăng ký tài khoản</Text>
                 <Text style={styles.desc}>Đăng ký tài khoản để tìm kiếm công việc mở ước,</Text>
