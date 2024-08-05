@@ -92,7 +92,7 @@ export default function Home({ navigation }) {
                     <Icon name="map" color={orange} size={24} />
                 </View>
             </View>
-            <ScrollView style={styles.headerMain} showsVerticalScrollIndicator={false}>
+            <ScrollView style={styles.headerMain} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
                 <View>
                     <Text style={styleShare.textMainOption}>Gợi ý công việc</Text>
                     {dataJob.map((item) => (
@@ -112,11 +112,11 @@ export default function Home({ navigation }) {
                                 </View>
                                 <View style={styles.infoJobContainer}>
                                     <View>
-                                        <Chip style={styles.chip}>{item.company.location}</Chip>
-                                        <Chip style={styles.chip}>{`${item.salary.min} - ${item.salary.max} VND`}</Chip>
+                                        <Chip style={styleShare.chip}>{item.company.location}</Chip>
+                                        <Chip style={styleShare.chip}>{`${item.salary.min} - ${item.salary.max} VND`}</Chip>
                                     </View>
                                     <View>
-                                        <Chip style={styles.chip}>{item.experience}</Chip>
+                                        <Chip style={styleShare.chip}>{item.experience}</Chip>
                                     </View>
                                 </View>
                             </View>
@@ -185,10 +185,5 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center'
     },
-    chip: {
-        alignSelf: 'flex-start',
-        backgroundColor: grey,
-        marginRight: 10,
-        marginTop: 10
-    }
+
 })

@@ -90,6 +90,12 @@ const styleShare = StyleSheet.create({
         padding: 10,
         marginRight: 10
     },
+    chip: {
+        alignSelf: 'flex-start',
+        backgroundColor: grey,
+        marginRight: 10,
+        marginTop: 10
+    }
 })
 
 export default styleShare

@@ -26,7 +26,6 @@ export default function App() {
         <Stack.Screen name="AuthStack" component={AuthStack} />
         <Stack.Screen name="MainStack" component={MainTab} />
         <Stack.Screen name="JobDetail" component={JobDetail} />
-
       </Stack.Navigator>
     </NavigationContainer>
   );
