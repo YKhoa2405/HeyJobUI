@@ -24,22 +24,43 @@ export default function Profile({ navigation }) {
         { id: 1, icon: 'bookmark', title: 'Việc làm đã lưu', info: '5' },
         { id: 2, icon: 'briefcase', title: 'Việc làm đã ứng tuyển', info: '5' },
         { id: 3, icon: 'business', title: 'Công ty đã theo dõi', info: '5' },
-
     ]
+
+    const handleManageJobClick = (id) => {
+        switch (id) {
+            case 1:
+                navigation.navigate('SaveJob')
+                break;
+            case 2:
+                console.log('Việc làm đã ứng tuyển clicked');
+                // Navigate to the applied jobs screen or perform other actions
+                break;
+            case 3:
+                console.log('Công ty đã theo dõi clicked');
+                // Navigate to the followed companies screen or perform other actions
+                break;
+            default:
+                console.log('Unknown item clicked');
+                break;
+        }
+    };
 
     const ManageJobGrid = () => (
         <View style={styles.grid}>
             {manageJob.map((item) => (
-                <View key={item.id} style={styles.gridItem}>
-                    <View style={styles.containerAvatarJob}>
-                        <Icon name={item.icon} size={20} color={bgButton1}></Icon>
-                    </View>
-                    <View style={[styleShare.flexBetween, { marginTop: 10 }]}>
-                        <Text style={{ paddingRight: 10, fontWeight: '500' }}>{item.title}</Text>
-                        <Text style={styleShare.textMainOption}>{item.info}</Text>
+                <TouchableWithoutFeedback onPress={() => handleManageJobClick(item.id)} key={item.id}>
+                    <View style={styles.gridItem}>
+                        <View style={styles.containerAvatarJob}>
+                            <Icon name={item.icon} size={20} color={bgButton1}></Icon>
+                        </View>
+                        <View style={[styleShare.flexBetween, { marginTop: 10 }]}>
+                            <Text style={{ paddingRight: 10, fontWeight: '500' }}>{item.title}</Text>
+                            <Text style={styleShare.textMainOption}>{item.info}</Text>
 
+                        </View>
                     </View>
-                </View>
+                </TouchableWithoutFeedback>
+
             ))}
         </View>
     );
@@ -68,9 +89,9 @@ export default function Profile({ navigation }) {
                                 <Icon name="pencil" size={24} color={orange} />
                             </View>
                             <View style={{ marginTop: 10 }}>
-                                <Chip style={{ alignSelf: 'flex-start', backgroundColor: grey,marginBottom:5 }}>{item.info}</Chip>
-                                <Chip style={{ alignSelf: 'flex-start', backgroundColor: grey,marginBottom:5 }}>{item.info}</Chip>
-                                <Chip style={{ alignSelf: 'flex-start', backgroundColor: grey,marginBottom:5 }}>{item.info}</Chip>
+                                <Chip style={{ alignSelf: 'flex-start', backgroundColor: grey, marginBottom: 5 }}>{item.info}</Chip>
+                                <Chip style={{ alignSelf: 'flex-start', backgroundColor: grey, marginBottom: 5 }}>{item.info}</Chip>
+                                <Chip style={{ alignSelf: 'flex-start', backgroundColor: grey, marginBottom: 5 }}>{item.info}</Chip>
 
 
                             </View>
@@ -85,7 +106,7 @@ export default function Profile({ navigation }) {
                             <View style={styleShare.flexBetween}>
                                 <View style={styleShare.flexCenter}>
                                     <Avatar.Image source={require('../../assets/images/cv.png')} size={50} />
-                                    <Text style={{ fontWeight: '500', marginLeft:15 }}>Hướng dẫn viết CV</Text>
+                                    <Text style={{ fontWeight: '500', marginLeft: 15 }}>Hướng dẫn viết CV</Text>
                                 </View>
                                 <Icon name="chevron-forward-outline" size={24} color={bgButton1} />
                             </View>
@@ -111,7 +132,7 @@ export default function Profile({ navigation }) {
                     <TouchableOpacity style={styles.manageJob} onPress={() => { navigation.navigate('Login') }}>
                         <View style={styleShare.flexCenter}>
                             <Text style={{ fontWeight: '500', fontSize: 16, marginRight: 10, color: 'red' }}>Đăng xuất</Text>
-                            <Icon name="chevron-forward-outline" size={24} color={'red'} />
+                            <Icon name="exit" size={24} color={'red'} />
                         </View>
                     </TouchableOpacity>
                 </View>
@@ -138,8 +159,8 @@ const styles = StyleSheet.create({
     },
     profileItem: {
         paddingHorizontal: 20,
-        paddingTop:15,
-        paddingBottom:10,
+        paddingTop: 15,
+        paddingBottom: 10,
         backgroundColor: white
     },
     manageJob: {

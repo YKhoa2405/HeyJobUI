@@ -5,6 +5,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons'
 import { KeyboardAvoidingView, Platform } from "react-native";
 import { bgButton1, orange } from './src/assets/theme/color';
+import Toast from 'react-native-toast-message';
+
 
 import Wellcome from './src/screens/Auth/Wellcome';
 import Login from './src/screens/Auth/Login';
@@ -15,6 +17,8 @@ import Profile from './src/screens/Auth/Profile';
 import Chat from './src/screens/Chat/Chat';
 import Notification from './src/screens/Notification/Notification';
 import JobDetail from './src/screens/Home/JobDetail';
+import UploadCV from './src/screens/Home/UploadCV';
+import SaveJob from './src/screens/Job/SaveJob';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -26,7 +30,12 @@ export default function App() {
         <Stack.Screen name="AuthStack" component={AuthStack} />
         <Stack.Screen name="MainStack" component={MainTab} />
         <Stack.Screen name="JobDetail" component={JobDetail} />
+        <Stack.Screen name="UploadCV" component={UploadCV} />
+        <Stack.Screen name="SaveJob" component={SaveJob} />
+
       </Stack.Navigator>
+      <Toast />
+
     </NavigationContainer>
   );
 }

@@ -2,7 +2,6 @@ import React from "react";
 import { StyleSheet, View, Image, Text, TouchableOpacity, ScrollView,TouchableWithoutFeedback } from "react-native";
 import styleShare from "../../assets/theme/style";
 import UIHeader from "../../components/UIHeader";
-import ButtonMain from "../../components/ButtonMain"
 import { bgButton1, bgButton2, bgImage, grey, orange, textColor, white } from "../../assets/theme/color";
 import Icon from "react-native-vector-icons/Ionicons";
 
@@ -79,7 +78,7 @@ export default function JobDetail({navigation,route}) {
                 <View style={styleShare.buttonSave}>
                     <Icon name="bookmarks-outline" color={orange} size={24}/>
                 </View>
-                <TouchableOpacity style={styles.buttonApply}>
+                <TouchableOpacity style={styles.buttonApply} onPress={()=>{navigation.navigate('UploadCV')}}>
                     <Text style={styles.buttonText}>Ứng tuyển ngay</Text>
                 </TouchableOpacity>
             </View>
