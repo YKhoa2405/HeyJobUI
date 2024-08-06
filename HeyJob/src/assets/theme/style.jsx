@@ -43,8 +43,7 @@ const styleShare = StyleSheet.create({
     line: {
         height: 1,
         flex: 1,
-        opacity: 0.6,
-        backgroundColor: 'grey'
+        backgroundColor: bgButton2
     },
     lineText: {
         marginHorizontal: 5,
@@ -95,6 +94,20 @@ const styleShare = StyleSheet.create({
         backgroundColor: grey,
         marginRight: 10,
         marginTop: 10
+    },
+    searchComponent: {
+        borderRadius: 20,
+        width: '85%',
+        marginRight: 10,
+        backgroundColor: white,
+        borderWidth: 1,
+        borderColor: grey
+    },
+    imageNullData:{
+        width: 200,
+        height: 200,
+        resizeMode: 'cover',
+        marginVertical:40
     }
 })
 

@@ -19,6 +19,8 @@ import Notification from './src/screens/Notification/Notification';
 import JobDetail from './src/screens/Home/JobDetail';
 import UploadCV from './src/screens/Home/UploadCV';
 import SaveJob from './src/screens/Job/SaveJob';
+import JobSearch from './src/screens/Home/JobSearch';
+import JobSearchDetail from './src/screens/Home/JobSearchDetail';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -32,6 +34,9 @@ export default function App() {
         <Stack.Screen name="JobDetail" component={JobDetail} />
         <Stack.Screen name="UploadCV" component={UploadCV} />
         <Stack.Screen name="SaveJob" component={SaveJob} />
+        <Stack.Screen name="JobSearch" component={JobSearch} />
+        <Stack.Screen name="JobSearchDetail" component={JobSearchDetail} />
+
 
       </Stack.Navigator>
       <Toast />

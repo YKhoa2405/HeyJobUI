@@ -84,17 +84,25 @@ export default function Home({ navigation }) {
     return (
         <View style={styleShare.container}>
             <View style={styles.headerTop}>
-                <Searchbar
-                    style={styles.searchComponent}
-                    placeholder="Tìm kiếm công việc..."
-                    editable={false} />
+                <TouchableOpacity onPress={() => navigation.navigate('JobSearch')} style={styleShare.searchComponent}>
+                    <Searchbar
+                        placeholder="Tìm kiếm công việc..."
+                        editable={false} />
+                </TouchableOpacity>
+
                 <View style={styleShare.buttonSave}>
                     <Icon name="map" color={orange} size={24} />
                 </View>
             </View>
-            <ScrollView style={styles.headerMain} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+            <ScrollView style={styles.headerMain} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }}>
                 <View>
-                    <Text style={styleShare.textMainOption}>Gợi ý công việc</Text>
+                    <View style={styleShare.flexBetween}>
+                        <Text style={styleShare.textMainOption}>Gợi ý công việc</Text>
+                        <TouchableOpacity style={styleShare.textMainOption}>
+                            <Text style={styleShare.lineText}>Xem tất cả</Text>
+                        </TouchableOpacity>
+
+                    </View>
                     {dataJob.map((item) => (
                         <TouchableWithoutFeedback key={item.id} onPress={() => { navigation.navigate('JobDetail', { jobId: item.id }) }}>
                             <View style={styles.jobItemContainer}>
@@ -141,24 +149,14 @@ const styles = StyleSheet.create({
         borderBottomRightRadius: 30,
         backgroundColor: bgButton1
     },
-    searchComponent: {
-        borderRadius: 20,
-        width: '85%',
-        marginRight: 10,
-        backgroundColor: white,
-        borderWidth: 1,
-        borderColor: grey
-    },
     headerMain: {
-        marginHorizontal: 20,
-        marginTop: 20
+        padding:20
     },
     jobItemContainer: {
         backgroundColor: white,
         borderRadius: 20,
         padding: 20,
-        backgroundColor: white,
-        marginTop: 15
+        marginTop: 10
     },
     containerAvatarJob: {
         width: 50,

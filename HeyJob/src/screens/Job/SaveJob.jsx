@@ -89,10 +89,9 @@ export default function SaveJob({navigation}) {
                 <View>
                     {jobSave.length === 0 ? (
                         <View style={{marginTop: 50, alignItems:'center'}}>
-                            <Image source={require("../../assets/images/save.png")} style={styles.imageSave} />
+                            <Image source={require("../../assets/images/save.png")} style={styleShare.imageNullData} />
                             <Text style={styleShare.textMainOption}>Bạn chưa lưu việc làm nào</Text>
                             <Text style={{padding:20, textAlign:'center'}}>Bạn không có bất kỳ công việc nào được lưu, vui lòng tìm kiếm để lưu công việc </Text>
-
                         </View>
                     ) : (
                         jobSave.map((item) => (
@@ -153,11 +152,5 @@ const styles = StyleSheet.create({
         paddingRight: 10,
         flexDirection: 'row',
         justifyContent: 'center'
-    },
-    imageSave: {
-        width: 200,
-        height: 200,
-        resizeMode: 'cover',
-        marginVertical:40
     }
 })

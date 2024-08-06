@@ -89,7 +89,7 @@ export default function JobDetail({navigation,route}) {
 const styles = StyleSheet.create({
     containerTop: {
         alignItems: 'center',
-        backgroundColor: grey,
+        backgroundColor: white,
         borderRadius: 20,
         marginHorizontal: 20,
         marginTop: 30,
@@ -110,7 +110,9 @@ const styles = StyleSheet.create({
     },
     containerMain: {
         paddingHorizontal: 20,
-        marginTop: 20
+        marginTop: 10,
+        paddingTop:10,
+        backgroundColor:white
     },
     infoContainer: {
         flexDirection: 'row',

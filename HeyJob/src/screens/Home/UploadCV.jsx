@@ -88,7 +88,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderRadius: 10,
         marginTop: 20,
-        marginBottom: 30
+        marginBottom: 30,
+        backgroundColor:white
     },
     introduceInput: {
         borderWidth: 1,
