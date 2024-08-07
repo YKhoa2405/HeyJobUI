@@ -1,47 +1,110 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import React, { useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from "react-native";
 import styleShare from "../../assets/theme/style";
 import InputMain from "../../components/InputMain";
 import { bgButton1, bgButton2, orange, white } from "../../assets/theme/color";
 import ButtonMain from "../../components/ButtonMain";
-export default function Register({navigation}) {
+import { auth } from "../../config/Firebase";
+import { ToastMess } from "../../components/ToastMess";
+import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
+
+
+export default function Register({ navigation }) {
+    const [userName, setUsername] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [passwordAg, setPasswordAg] = useState('');
+
+    const translateFirebaseError = (errorCode) => {
+        switch (errorCode) {
+            case 'auth/invalid-email':
+                return 'Địa chỉ email không hợp lệ.';
+            case 'auth/email-already-in-use':
+                return 'Email đã được sử dụng.';
+            case 'auth/weak-password':
+                return 'Mật khẩu quá yếu. Vui lòng chọn mật khẩu mạnh hơn.';
+            case 'auth/operation-not-allowed':
+                return 'Hoạt động này không được phép.';
+            default:
+                return 'Đã xảy ra lỗi. Vui lòng thử lại.';
+        }
+    };
+
+    const handleSignUp = async () => {
+        if (!email || !password || !userName || !passwordAg) {
+            ToastMess({ type: 'error', text1: 'Vui lòng không để trống các trường.' });
+            return;
+        }
+
+        if (password !== passwordAg) {
+            ToastMess({ type: 'error', text1: 'Mật khẩu và mật khẩu xác nhận không khớp.' });
+            return;
+        }
+
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            await sendEmailVerification(user);
+            ToastMess({ type: "success", text1: "Email xác thực đã được gửi. Vui lòng kiểm tra hộp thư." });
+            navigation.navigate('ChooseRole')
+        } catch (e) {
+            const errorMessage = translateFirebaseError(e.code);
+            ToastMess({ type: 'error', text1: errorMessage });
+
+
+        }
+    };
+
     return (
-        <View style={[styleShare.container,{marginHorizontal:20}]}>
+        <ScrollView style={[styleShare.container, { marginHorizontal: 20 }]} showsVerticalScrollIndicator={false}>
             <View style={styles.containerTop}>
                 <Text style={styleShare.titleText}>Đăng ký tài khoản</Text>
                 <Text style={styles.desc}>Đăng ký tài khoản để tìm kiếm công việc mở ước,</Text>
                 <Text>công việc theo chuyên môn và nhiều hơn thế nữa</Text>
             </View>
             <View style={styles.containerMain}>
-                <Text style={styles.textInput}>Họ và tên</Text>
+                <Text style={styles.textInput}>Họ và tên / Tên công ty</Text>
                 <InputMain
                     placeholder="Họ và tên"
+                    onChangeText={setUsername}
+                    autoCapitalize="none"
                 />
                 <Text style={styles.textInput}>Email</Text>
                 <InputMain
                     placeholder="Email"
+                    onChangeText={setEmail}
+                    autoCapitalize="none"
+
                 />
                 <Text style={styles.textInput}>Mật khẩu</Text>
                 <InputMain
                     placeholder="Mật khẩu"
                     isPassword={true}
+                    onChangeText={setPassword}
+                    autoCapitalize="none"
+
                 />
                 <Text style={styles.textInput}>Nhập lại mật khẩu</Text>
                 <InputMain
                     placeholder="Nhập lại mật khẩu"
                     isPassword={true}
+                    onChangeText={setPasswordAg}
+                    autoCapitalize="none"
+
                 />
             </View>
             <View style={styles.containerFooter}>
                 <ButtonMain title={'Đăng ký'}
                     backgroundColor={bgButton1}
-                    textColor={white} />
-                <View style={[styleShare.flexCenter,{marginTop:30}]}>
+                    textColor={white}
+                    onPress={() => handleSignUp()} />
+                <View style={[styleShare.flexCenter, { marginTop: 30 }]}>
                     <Text>Bạn đã có tài khoản ? </Text>
                     <TouchableOpacity><Text style={{ fontWeight: '500', color: orange }} onPress={() => navigation.navigate('Login')}>Đăng nhập ngay</Text></TouchableOpacity>
                 </View>
             </View>
-        </View>
+        </ScrollView>
     )
 }
 

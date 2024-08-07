@@ -21,22 +21,30 @@ import UploadCV from './src/screens/Home/UploadCV';
 import SaveJob from './src/screens/Job/SaveJob';
 import JobSearch from './src/screens/Home/JobSearch';
 import JobSearchDetail from './src/screens/Home/JobSearchDetail';
+import ChooseRole from './src/screens/Auth/ChooseRole';
+import HomeEmployers from './src/screens/Employers/HomeEmployers';
+import Statistical from './src/screens/Employers/Statistical';
+import AddPost from './src/screens/Employers/AddPost';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
+// const Drawer = createDrawerNavigator();
 
 export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="AuthStack" component={AuthStack} />
-        <Stack.Screen name="MainStack" component={MainTab} />
+        <Stack.Screen name="MainTab" component={MainTab} />
         <Stack.Screen name="JobDetail" component={JobDetail} />
         <Stack.Screen name="UploadCV" component={UploadCV} />
         <Stack.Screen name="SaveJob" component={SaveJob} />
         <Stack.Screen name="JobSearch" component={JobSearch} />
         <Stack.Screen name="JobSearchDetail" component={JobSearchDetail} />
-
+        <Stack.Screen name="ChooseRole" component={ChooseRole} />
+        <Stack.Screen name="HomeEmployers" component={HomeEmployers} />
+        <Stack.Screen name="AddPost" component={AddPost} />
+        <Stack.Screen name="Statistical" component={Statistical} />
 
       </Stack.Navigator>
       <Toast />
@@ -80,6 +88,44 @@ function MainTab() {
         <Tab.Screen name="Chat" component={Chat} />
         <Tab.Screen name="Notification" component={Notification} />
         <Tab.Screen name="Profile" component={Profile} />
+      </Tab.Navigator>
+    </KeyboardAvoidingView>
+
+  );
+}
+
+function MainEmployers() {
+  return (
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : null}>
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          tabBarIcon: ({ focused, color, size }) => {
+            let iconName;
+            if (route.name === 'HomeEmployers') {
+              iconName = focused ? 'layers' : 'layers-outline';
+            }
+            else if (route.name === 'Statistical') {
+              iconName = focused ? 'stats-chart' : 'stats-chart-outline';
+            }
+            else if (route.name === 'AddPost') {
+              iconName = focused ? 'bar-chart' : 'bar-chart-outline';
+            }
+
+            return <Icon name={iconName} size={28} color={color} />;
+          },
+          tabBarActiveTintColor: orange,
+          tabBarInactiveTintColor: 'gray',
+          tabBarShowLabel: false,
+          headerShown: false,
+          tabBarHideOnKeyboard: true,
+        })}
+      >
+        <Tab.Screen name="HomeEmployers" component={HomeEmployers} />
+        <Tab.Screen name="AddPost" component={AddPost} />
+        <Tab.Screen name="Statistical" component={Statistical} />
+
       </Tab.Navigator>
     </KeyboardAvoidingView>
 

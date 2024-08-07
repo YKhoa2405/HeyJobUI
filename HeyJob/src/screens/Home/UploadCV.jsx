@@ -4,7 +4,6 @@ import styleShare from "../../assets/theme/style";
 import UIHeader from "../../components/UIHeader";
 import Icon from "react-native-vector-icons/Ionicons";
 import { bgButton1, bgButton2, grey, orange, white } from "../../assets/theme/color";
-// import DocumentPicker from 'react-native-document-picker';
 
 export default function UploadCV({ navigation }) {
 

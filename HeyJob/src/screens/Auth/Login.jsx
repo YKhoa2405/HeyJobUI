@@ -1,12 +1,32 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import styleShare from "../../assets/theme/style";
 import InputMain from "../../components/InputMain";
 import { bgButton1, bgButton2, orange, white } from "../../assets/theme/color";
 import ButtonMain from "../../components/ButtonMain";
-export default function Login({navigation}) {
+import { ToastMess } from "../../components/ToastMess";
+export default function Login({ navigation }) {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    const handleLogin = async () => {
+        if (!email || !password) {
+            ToastMess({ type: 'error', text1: 'Vui lòng không để trống các trường.' });
+            return;
+        }
+
+        try {
+
+            navigation.navigate('MainTab')
+            ToastMess({ type: 'success', text1: 'Đăng nhập thành công' });
+
+        } catch (e) {
+
+        }
+    };
+
     return (
-        <View style={[styleShare.container,{marginHorizontal:20}]}>
+        <View style={[styleShare.container, { marginHorizontal: 20 }]}>
             <View style={styles.containerTop}>
                 <Text style={styleShare.titleText}>Chào mừng trở lại</Text>
                 <Text style={styles.desc}>Đăng nhập tài khoản để tìm kiếm công việc mở ước,</Text>
@@ -16,14 +36,18 @@ export default function Login({navigation}) {
                 <Text style={styles.textInput}>Email</Text>
                 <InputMain
                     placeholder="Email"
+                    onChangeText={setEmail}
+                    autoCapitalize="none"
                 />
                 <Text style={styles.textInput}>Mật khẩu</Text>
                 <InputMain
                     placeholder="Mật khẩu"
                     isPassword={true}
+                    onChangeText={setPassword}
+                    autoCapitalize="none"
                 />
                 <View style={{ alignItems: "flex-end" }}>
-                    <TouchableOpacity onPress={()=>{navigation.navigate("ForgotPass")}}>
+                    <TouchableOpacity onPress={() => { navigation.navigate("ForgotPass") }}>
                         <Text style={styles.textInput}>Quên mật khẩu ?</Text>
                     </TouchableOpacity>
                 </View>
@@ -32,7 +56,7 @@ export default function Login({navigation}) {
                 <ButtonMain title={'Đăng nhập'}
                     backgroundColor={bgButton1}
                     textColor={white}
-                    onPress={() => navigation.navigate('MainStack')} />
+                    onPress={() => handleLogin()} />
                 <View style={styleShare.lineContainer}>
                     <View style={styleShare.line}></View>
                     <Text style={styleShare.lineText}>hoặc đăng nhập bằng</Text>
@@ -43,7 +67,7 @@ export default function Login({navigation}) {
                 </TouchableOpacity>
                 <View style={styleShare.flexCenter}>
                     <Text>Bạn chưa có tài khoản ? </Text>
-                    <TouchableOpacity onPress={()=>{navigation.navigate("Register")}}><Text style={{ fontWeight: '500', color: orange }} onPress={() => navigation.navigate('Register')}>Đăng ký ngay</Text></TouchableOpacity>
+                    <TouchableOpacity onPress={() => { navigation.navigate("Register") }}><Text style={{ fontWeight: '500', color: orange }} onPress={() => navigation.navigate('Register')}>Đăng ký ngay</Text></TouchableOpacity>
                 </View>
             </View>
         </View>
@@ -75,6 +99,6 @@ const styles = StyleSheet.create({
         width: 40,
         height: 40,
         marginTop: 10,
-        marginBottom:40
+        marginBottom: 40
     }
 })
