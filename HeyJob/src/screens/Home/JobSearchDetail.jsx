@@ -1,125 +1,121 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, TouchableWithoutFeedback, Image } from "react-native";
+import React, { useContext, useEffect, useState } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, TouchableWithoutFeedback, Image, ActivityIndicator } from "react-native";
 import styleShare from "../../assets/theme/style";
 import Icon from "react-native-vector-icons/Ionicons"
 import { bgButton1, bgButton2, grey, orange, white } from "../../assets/theme/color";
 import { Searchbar, Chip } from "react-native-paper";
-import { endpoints } from "../../config/API";
+import { authApi, endpoints } from "../../config/API";
 import axios from "axios";
+import MyContext from "../../config/MyContext";
+import ReusableModal from "../../components/ReusableModal ";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import moment from "moment";
 
 export default function JobSearchDetail({ navigation, route }) {
-    const { searchContent } = route.params
-    const [provinces, setProvinces] = useState([])
 
-    const [recentJobs, setRecentJobs] = useState([
-        // {
-        //     id: '1',
-        //     image: 'https://example.com/image1.png',
-        //     title: 'Kỹ sư phần mềm',
-        //     company: {
-        //         name: 'Công ty A',
-        //         location: 'Hà Nội, Việt Nam',
-        //     },
-        //     experience: '2-3 năm',
-        //     salary: {
-        //         min: 1000,
-        //         max: 1500,
-        //     },
-        // },
-        // {
-        //     id: '2',
-        //     image: 'https://example.com/image2.png',
-        //     title: 'Chuyên viên phân tích dữ liệu',
-        //     company: {
-        //         name: 'Công ty B',
-        //         location: 'TP. Hồ Chí Minh, Việt Nam',
-        //     },
-        //     experience: '1-2 năm',
-        //     salary: {
-        //         min: 800,
-        //         max: 1200,
-        //     },
-        // },
-        // {
-        //     id: '3',
-        //     image: 'https://example.com/image3.png',
-        //     title: 'Quản lý dự án',
-        //     company: {
-        //         name: 'Công ty C',
-        //         location: 'Đà Nẵng, Việt Nam',
-        //     },
-        //     experience: '5+ năm',
-        //     salary: {
-        //         min: 1500,
-        //         max: 2000,
-        //     },
-        // },
-        // {
-        //     id: '4',
-        //     image: 'https://example.com/image4.png',
-        //     title: 'Nhân viên kinh doanh',
-        //     company: {
-        //         name: 'Công ty D',
-        //         location: 'Cần Thơ, Việt Nam',
-        //     },
-        //     experience: '1-2 năm',
-        //     salary: {
-        //         min: 700,
-        //         max: 1000,
-        //     },
-        // },
-        // {
-        //     id: '5',
-        //     image: 'https://example.com/image5.png',
-        //     title: 'Thiết kế đồ họa',
-        //     company: {
-        //         name: 'Công ty E',
-        //         location: 'Hải Phòng, Việt Nam',
-        //     },
-        //     experience: '2-3 năm',
-        //     salary: {
-        //         min: 900,
-        //         max: 1300,
-        //     },
-        // },
-    ]);
+    const [loading, setLoading] = useState(false);
+    const { searchContent } = route.params
+    const [user, dispatch] = useContext(MyContext)
+    const [province, setProvince] = useState()
+    const [selectExperience, setSelectExperience] = useState('')
+    const [selectedProvince, setSelectedProvince] = useState('');
+    const [selectedSalary, setSelectedSalary] = useState('')
+    const salaries = ['Dưới 5 triệu', '10 - 15  triệu', '15 - 20 triệu', '20 - 25 triệu', '25 - 30 triệu', '30 - 50 triệu', 'Trên 50 triệu', 'Thỏa thuận'];
+    const experiences = ['Không yêu cầu', 'Thực tập sinh', 'Dưới 1 năm', '1 năm', '2 năm', '3 năm', '4 năm', '5 năm', 'Trên 5 năm'];
+    const [modalVisible, setModalVisible] = useState({
+        salary: false,
+        // technology: false,
+        experience: false,
+        location: false
+    });
+    const buildSearchUrl = (searchContent, experience, location, salary) => {
+        return `/jobs/search/?title=${encodeURIComponent(searchContent || '')}&experience=${encodeURIComponent(experience || '')}&location=${encodeURIComponent(location || '')}&salary=${encodeURIComponent(salary || '')}`;
+    };
+    const searchUrl = buildSearchUrl(searchContent, selectExperience, selectedProvince, selectedProvince);
+    const [recentJobs, setRecentJobs] = useState([]);
+
+
+    useEffect(() => {
+        fetchSearchJob();
+    }, [searchContent, selectedProvince, selectExperience, selectedSalary]);
+
+    useEffect(() => {
+        fetchProvince();
+    }, []);
+
+
+    const fetchProvince = async () => {
+        const res = await axios.get('https://esgoo.net/api-tinhthanh/1/0.htm')
+        const data = res.data.data;
+        const fullNames = data.map(item => item.name);
+        setProvince(fullNames)
+    }
+
+    const fetchSearchJob = async () => {
+        const token = await AsyncStorage.getItem("access-token");
+        try {
+            setLoading(true);
+            // const response = await authApi(token).get(endpoints['search_job'], {
+            //     params: {
+            //         title: searchContent,
+            //         location: selectedProvince,
+            //         experience: selectExperience,
+            //         salary: selectedSalary
+            //     }
+            // });
+            const response = await authApi(token).get(searchUrl);
+            setRecentJobs(response.data);
+        } catch (error) {
+            console.error('Error fetching jobs:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleProvinceSelect = (province) => {
+        setSelectedProvince(province);
+        setModalVisible({ ...modalVisible, location: false });
+    };
+    const handleSalarySelect = (salary) => {
+        setSelectedSalary(salary);
+        setModalVisible({ ...modalVisible, salary: false });
+    };
+    const handleExperienceSelect = (experience) => {
+        setSelectExperience(experience);
+        setModalVisible({ ...modalVisible, experience: false });
+    };
 
     const renderSearchJobItem = ({ item }) => (
         <TouchableWithoutFeedback key={item.id} onPress={() => { navigation.navigate('JobDetail', { jobId: item.id }) }}>
             <View style={styles.jobItemContainer}>
-                <View style={styles.btnSave}>
-                    <Icon name="bookmark-outline" size={26} />
-                </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <View style={styles.containerAvatarJob}>
-                        <Image source={{ uri: item.image }} style={styles.avatarJob} />
+                        <Image source={require('../../assets/images/google.png')} style={styles.avatarJob} />
                     </View>
                     <View>
-                        <Text style={styles.titleJobAndName}>{item.title}</Text>
-                        <Text style={{ marginTop: 5 }}>{item.company.name}</Text>
+                        <Text style={styleShare.titleJobAndName}>{item.title}</Text>
+                        <Text style={{ marginTop: 5 }}>{item.employer.employer.company_name}</Text>
                     </View>
                 </View>
-                <View style={styles.infoJobContainer}>
-                    <View>
-                        <Chip style={styleShare.chip}>{item.company.location}</Chip>
-                        <Chip style={styleShare.chip}>{`${item.salary.min} - ${item.salary.max} VND`}</Chip>
-                    </View>
-                    <View>
-                        <Chip style={styleShare.chip}>{item.experience}</Chip>
-                    </View>
+                <View style={styleShare.technologyContainer}>
+                    <Chip style={styleShare.chip}>{item.location}</Chip>
+                    <Chip style={styleShare.chip}>{`${item.salary} VND`}</Chip>
+                    <Chip style={styleShare.chip}>{item.experience}</Chip>
+                    {item.technologies.map((tech, index) => (
+                        <Chip key={index} style={styleShare.chip}>
+                            {tech.name}
+                        </Chip>
+                    ))}
+                </View>
+                <View>
+                    <Text>Hạn ứng tuyển: {moment(item.expiration_date).format('DD/MM/YYYY')}</Text>
                 </View>
             </View>
         </TouchableWithoutFeedback>
     );
 
-    const loadProvinces = async () => {
-        try {
-            const res = await axios.get(endpoints['getAllProvinces'])
-            setProvinces(res.data)
-            console.log(res.data)
-        } catch (error) {
-            console.log(error)
-        }
+    if (loading) {
+        return <ActivityIndicator style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} size="large" color='orange' />;
     }
 
 
@@ -127,9 +123,9 @@ export default function JobSearchDetail({ navigation, route }) {
         <View style={[styleShare.container, { marginHorizontal: 20 }]}>
             <View style={styles.containerTop}>
                 <Icon name="arrow-back" size={26} color={bgButton1} onPress={() => navigation.goBack()} />
-                <TouchableOpacity style={[styleShare.flexCenter, { marginLeft: 10 }]} onPress={() => loadProvinces()}>
+                <TouchableOpacity style={[styleShare.flexCenter, { marginLeft: 10 }]} onPress={() => setModalVisible({ ...modalVisible, location: true })}>
                     <Icon name="location" size={20} color={orange} onPress={() => navigation.goBack()} />
-                    <Text style={styles.textLocation}>Hồ Chí Minh</Text>
+                    <Text style={styles.textLocation}>{selectedProvince ? selectedProvince : user.seeker.location}</Text>
                     <Icon name="chevron-down-outline" size={20} color={orange} />
                 </TouchableOpacity>
             </View>
@@ -139,12 +135,12 @@ export default function JobSearchDetail({ navigation, route }) {
                     editable={false}
                     clearIcon={true} />
                 <View style={styleShare.flexCenter}>
-                    <TouchableOpacity style={styles.optionSearch}>
-                        <Text>Kinh nghiệm</Text>
+                    <TouchableOpacity style={styles.optionSearch} onPress={() => setModalVisible({ ...modalVisible, experience: true })}>
+                        <Text>{selectExperience ? selectExperience : 'Kinh nghiệm'}</Text>
                         <Icon name="chevron-down-outline" size={20} color={orange} />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.optionSearch}>
-                        <Text>Mức lương</Text>
+                    <TouchableOpacity style={styles.optionSearch} onPress={() => setModalVisible({ ...modalVisible, salary: true })}>
+                        <Text>{selectedSalary ? selectedSalary : 'Chọn mức lương'}</Text>
                         <Icon name="chevron-down-outline" size={20} color={orange} />
                     </TouchableOpacity>
                 </View>
@@ -155,15 +151,53 @@ export default function JobSearchDetail({ navigation, route }) {
                     showsVerticalScrollIndicator={false}
                     style={styles.containerflat}
                     ListEmptyComponent={
-                        <View style={{marginTop: 50, alignItems:'center'}}>
+                        <View style={{ marginTop: 50, alignItems: 'center' }}>
                             <Image source={require("../../assets/images/save.png")} style={styleShare.imageNullData} />
                             <Text style={styleShare.textMainOption}>Không có kết qủa tìm kiếm</Text>
-                            <Text style={{padding:20, textAlign:'center'}}>Bạn hãy thử thay đổi từ khóa hoặc loại bỏ bớt tiêu chí lọc và thử lại </Text>
+                            <Text style={{ padding: 20, textAlign: 'center' }}>Bạn hãy thử thay đổi từ khóa hoặc loại bỏ bớt tiêu chí lọc và thử lại </Text>
                         </View>
                     }
                 />
             </View>
-
+            <ReusableModal
+                visible={modalVisible.location}
+                onClose={() => setModalVisible({ ...modalVisible, location: false })}
+                title="Chọn nơi làm việc mong muốn"
+                data={province}
+                selectedItems={selectedProvince ? [selectedProvince] : []}
+                onItemPress={handleProvinceSelect}
+                onComplete={() => {
+                    setModalVisible({ ...modalVisible, location: false });
+                    fetchSearchJob()
+                }}
+                singleSelect={true}
+            />
+            <ReusableModal
+                visible={modalVisible.salary}
+                onClose={() => setModalVisible({ ...modalVisible, salary: false })}
+                title="Chọn nơi làm việc mong muốn"
+                data={salaries}
+                selectedItems={selectedSalary ? [selectedSalary] : []}
+                onItemPress={handleSalarySelect}
+                onComplete={() => {
+                    setModalVisible({ ...modalVisible, salary: false });
+                    fetchSearchJob()
+                }}
+                singleSelect={true}
+            />
+            <ReusableModal
+                visible={modalVisible.experience}
+                onClose={() => setModalVisible({ ...modalVisible, experience: false })}
+                title="Chọn Kinh nghiệm"
+                data={experiences} // Example data
+                selectedItems={selectExperience ? [selectExperience] : []}
+                onItemPress={handleExperienceSelect} // Gọi hàm khi chọn item
+                onComplete={() => {
+                    setModalVisible({ ...modalVisible, experience: false });
+                    fetchSearchJob()
+                }} // Đóng modal và thực hiện tìm kiếm
+                singleSelect={true}
+            />
         </View>
     )
 }
@@ -191,11 +225,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         paddingHorizontal: 20,
         paddingVertical: 5,
-        borderColor: orange,
-        marginRight: 20,
+        borderColor: bgButton2,
+        marginRight: 10,
         borderRadius: 20,
         backgroundColor: white,
-        marginBottom: 5
+        flex: 1,
+        justifyContent: 'space-between'
     },
     jobItemContainer: {
         backgroundColor: white,

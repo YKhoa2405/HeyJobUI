@@ -41,19 +41,23 @@ export default function Register({ navigation }) {
             return;
         }
 
-        try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
+        // try {
+        //     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        //     const user = userCredential.user;
 
-            await sendEmailVerification(user);
-            ToastMess({ type: "success", text1: "Email xác thực đã được gửi. Vui lòng kiểm tra hộp thư." });
-            navigation.navigate('ChooseRole')
-        } catch (e) {
-            const errorMessage = translateFirebaseError(e.code);
-            ToastMess({ type: 'error', text1: errorMessage });
+        //     await sendEmailVerification(user);
+        //     ToastMess({ type: "success", text1: "Email xác thực đã được gửi. Vui lòng kiểm tra hộp thư." });
+        //     navigation.navigate('ChooseRole')
+        // } catch (e) {
+        //     const errorMessage = translateFirebaseError(e.code);
+        //     ToastMess({ type: 'error', text1: errorMessage });
+        // }
 
-
-        }
+        navigation.navigate('ChooseRole', {
+            email,
+            password,
+            userName
+        });
     };
 
     return (
@@ -64,7 +68,7 @@ export default function Register({ navigation }) {
                 <Text>công việc theo chuyên môn và nhiều hơn thế nữa</Text>
             </View>
             <View style={styles.containerMain}>
-                <Text style={styles.textInput}>Họ và tên / Tên công ty</Text>
+                <Text style={styles.textInput}>Họ và tên</Text>
                 <InputMain
                     placeholder="Họ và tên"
                     onChangeText={setUsername}

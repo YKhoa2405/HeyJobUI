@@ -12,19 +12,19 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ToastMess } from "../../components/ToastMess";
 import MyContext from "../../config/MyContext";
 
-export default function SaveJob({ navigation }) {
+export default function ListJobEmployer({ navigation }) {
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [jobState, dispatchJob] = useContext(MyContext);
 
     moment.locale('vi');
-    useEffect(() => {
-        fetchSaveJob(); // Gọi hàm fetch khi component mount
-    }, []);
-    const fetchSaveJob = async () => {
+
+    const fetchJobEmployer = async () => {
         try {
             const token = await AsyncStorage.getItem("access-token");
-            const res = await authApi(token).get(endpoints['save_job']);
+            const res = await authApi(token).get(endpoints['job_employer']);
             setJobs(res.data);
+            console.log(res.data);
         } catch (error) {
             console.error("Error fetching jobs:", error);
         } finally {
@@ -32,45 +32,59 @@ export default function SaveJob({ navigation }) {
         }
     };
 
-    const handleUnsaveJob = async (jobId) => {
-        try {
-            const token = await AsyncStorage.getItem("access-token");
-            await authApi(token).delete(endpoints['unsave_job'](jobId));
-            fetchSaveJob()
-            ToastMess({ type: 'success', text1: 'Đã bỏ lưu việc làm.' });
+    useEffect(() => {
+        fetchJobEmployer(); // Gọi hàm fetch khi component mount
+    }, []);
 
-        } catch (error) {
-            console.error("Error fetching jobs:", error);
-        } finally {
-            setLoading(false);
-        }
+    const handleDeleteJob = async (jobId) => {
+        Alert.alert(
+            "Xóa tin tuyển dụng",
+            "Bạn có chắc muốn xóa tin tuyển dụng này?",
+            [
+                {
+                    text: "Hủy",
+                    style: "cancel"
+                },
+                {
+                    text: "Xóa",
+                    onPress: async () => {
+                        try {
+                            const token = await AsyncStorage.getItem("access-token");
+                            await authApi(token).delete(endpoints['jobs_detail'](jobId));
+                            ToastMess({ type: 'success', text1: 'Xóa tin tuyển dụng thành công.' });
+                            dispatchJob({ type: 'DELETE_JOB_SUCCESS', payload: jobId });
 
-    }
-
-
-
+                        } catch (error) {
+                            console.log(error)
+                        }
+                    },
+                    style: "destructive"
+                }
+            ],
+            { cancelable: true }
+        );
+    };
 
     const renderItem = ({ item }) => {
         return (
-            <TouchableWithoutFeedback key={item.id} onPress={() => { navigation.navigate('JobDetail', { jobId: item.job.id }) }}>
+            <TouchableWithoutFeedback onPress={() => navigation.navigate('JobDetail', { jobId: item.id })}>
                 <View style={styles.jobItemContainer}>
-                    <TouchableOpacity style={styles.btnSave} onPress={() => handleUnsaveJob(item.job.id)}>
-                        <Icon name="bookmark" size={26} color={orange} />
-                    </TouchableOpacity>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <View style={styles.containerAvatarJob}>
-                            <Image source={require('../../assets/images/google.png')} style={styles.avatarJob} />
-                        </View>
-                        <View>
-                            <Text style={styleShare.titleJobAndName}>{item.job.title}</Text>
-                            <Text style={{ marginTop: 5 }}>{item.job.employer.employer.company_name}</Text>
+                    <View style={styleShare.flexBetween}>
+                        <Text style={styleShare.titleJobAndName}>{item.title}</Text>
+                        <View style={styleShare.flexCenter}>
+                            <TouchableOpacity style={{ zIndex: 999 }} onPress={() => handleDeleteJob(item.id)}>
+                                <Icon name="trash-outline" size={24} color={'red'} />
+                            </TouchableOpacity>
+
+                            {/* <TouchableOpacity style={{ zIndex: 999 }}>
+                                <Icon name="lock-closed" size={24} color={'green'} />
+                            </TouchableOpacity> */}
                         </View>
                     </View>
-                    <View style={styleShare.technologyContainer}>
-                        <Chip style={styleShare.chip}>{item.job.location}</Chip>
-                        <Chip style={styleShare.chip}>{`${item.job.salary} VND`}</Chip>
-                        <Chip style={styleShare.chip}>{item.job.experience}</Chip>
-                        {item.job.technologies.map((tech, index) => (
+                    <Text style={styleShare.textAlign}>{item.location}</Text>
+                    <Text style={styleShare.textAlign}>{item.salary}</Text>
+                    <View style={styles.technologyContainer}>
+                        {item.technologies.map((tech, index) => (
                             <Chip key={index} style={styleShare.chip}>
                                 {tech.name}
                             </Chip>
@@ -78,13 +92,15 @@ export default function SaveJob({ navigation }) {
                     </View>
                     <View style={styleShare.flexBetween}>
                         <View>
-                            <Text>Đã thêm: {moment(item.created_at).fromNow()}</Text>
-                            <Text>Hạn ứng tuyển: {moment(item.job.expiration_date).format('DD/MM/YYYY')}</Text>
+                            <Text>Đã đăng {moment(item.created_at).fromNow()}</Text>
+                            <Text>Hết hạn vào {moment(item.expiration_date).format('DD/MM/YYYY')}</Text>
+                        </View>
+                        <View>
+                            <Text style={[styleShare.titleJobAndName, { color: orange }]}>Hết hạn</Text>
                         </View>
                     </View>
                 </View>
             </TouchableWithoutFeedback>
-
         )
     };
 
@@ -96,12 +112,12 @@ export default function SaveJob({ navigation }) {
         <View style={styleShare.container}>
             <UIHeader leftIcon={"arrow-back"}
                 rightIcon={"ellipsis-horizontal"}
-                title={'Việc làm đã lưu'}
+                title={'Chiến dịch tuyển dụng'}
                 handleLeftIcon={() => { navigation.goBack() }} />
             <FlatList
                 data={jobs}
                 renderItem={renderItem}
-                keyExtractor={item => item.job.id.toString()}
+                keyExtractor={item => item.id.toString()}
                 ListEmptyComponent={
                     <View style={{ marginTop: 50, alignItems: 'center' }}>
                         <Image source={require("../../assets/images/save.png")} style={styleShare.imageNullData} />
@@ -126,24 +142,10 @@ const styles = StyleSheet.create({
         marginHorizontal: 20
     },
 
-    containerAvatarJob: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: bgButton2,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: 15
-    },
-    avatarJob: {
-        width: 30,
-        height: 30
-    },
-    btnSave: {
-        position: 'absolute',
-        top: 20,
-        right: 20,
-        opacity: 0.8,
-        zIndex: 999
+    technologyContainer: {
+        // Container chứa các Chip công nghệ
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        marginTop: 10
     },
 })

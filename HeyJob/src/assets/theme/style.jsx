@@ -103,12 +103,19 @@ const styleShare = StyleSheet.create({
         borderWidth: 1,
         borderColor: grey
     },
-    imageNullData:{
+    imageNullData: {
         width: 200,
         height: 200,
         resizeMode: 'cover',
-        marginVertical:40
-    }
+        marginVertical: 40
+    },
+
+    technologyContainer: {
+        // Container chứa các Chip công nghệ
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        marginTop: 10
+    },
 })
 
 export default styleShare

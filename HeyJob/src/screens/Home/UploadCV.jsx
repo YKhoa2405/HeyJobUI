@@ -5,7 +5,9 @@ import UIHeader from "../../components/UIHeader";
 import Icon from "react-native-vector-icons/Ionicons";
 import { bgButton1, bgButton2, grey, orange, white } from "../../assets/theme/color";
 
-export default function UploadCV({ navigation }) {
+export default function UploadCV({ navigation, route }) {
+    const { jobId } = route.params
+    console.log(jobId)
 
     // const chooseFile = async () => {
     //     try {
@@ -21,7 +23,7 @@ export default function UploadCV({ navigation }) {
     //       }
     //     }
     //   };
-      
+
     return (
         <View style={styleShare.container}>
             <UIHeader leftIcon={"arrow-back"}
@@ -30,7 +32,7 @@ export default function UploadCV({ navigation }) {
                 handleLeftIcon={() => { navigation.goBack() }} />
             <View style={styles.containerMain}>
                 <Text style={styleShare.titleJobAndName}>CV ứng tuyển</Text>
-                <TouchableWithoutFeedback onPress={()=>chooseFile()}>
+                <TouchableWithoutFeedback onPress={() => chooseFile()}>
                     <View style={styles.uploadBox}>
                         <Icon name="cloud-upload" size={30} color={orange}></Icon>
                         <Text style={[styleShare.titleJobAndName, { marginTop: 10 }]}>Nhấn để tải lên</Text>
@@ -88,7 +90,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         marginTop: 20,
         marginBottom: 30,
-        backgroundColor:white
+        backgroundColor: white
     },
     introduceInput: {
         borderWidth: 1,

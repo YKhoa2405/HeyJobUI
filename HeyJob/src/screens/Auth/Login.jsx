@@ -1,27 +1,64 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import React, { useContext, useState } from "react";
+import MyContext from "../../config/MyContext";
+import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator } from "react-native";
 import styleShare from "../../assets/theme/style";
 import InputMain from "../../components/InputMain";
 import { bgButton1, bgButton2, orange, white } from "../../assets/theme/color";
 import ButtonMain from "../../components/ButtonMain";
 import { ToastMess } from "../../components/ToastMess";
+import { client_id_api, client_secret_api } from "../../config/Key";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import API, { authApi, endpoints } from "../../config/API";
 export default function Login({ navigation }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [user, dispatch] = useContext(MyContext)
+
 
     const handleLogin = async () => {
-        if (!email || !password) {
-            ToastMess({ type: 'error', text1: 'Vui lòng không để trống các trường.' });
-            return;
-        }
+        // if (!email || !password) {
+        //     ToastMess({ type: 'error', text1: 'Vui lòng không để trống các trường.' });
+        //     return;
+        // }
 
+        setLoading(true)
         try {
+            let header = {
+                'Content-Type': 'application/x-www-form-urlencoded' // Change Content-Type
+            };
+            let data = {
+                username: 'Ungvien24',
+                password: '123456',
+                client_id: client_id_api,
+                client_secret: client_secret_api,
+                grant_type: "password",
+            };
+            let res = await API.post(endpoints["login"], data, { headers: header });
+            await AsyncStorage.setItem("access-token", res.data.access_token)
 
-            navigation.navigate('MainTab')
-            ToastMess({ type: 'success', text1: 'Đăng nhập thành công' });
+            let user = await authApi(res.data.access_token).get(endpoints['current_user']);
+            console.log(user.data)
 
-        } catch (e) {
+            dispatch({
+                'type': 'login',
+                'payload': user.data
+            })
+            if(user.data.role == 'Ung vien'){
+                navigation.navigate('MainTab')
+            } else{
+                navigation.navigate('HomeEmployers')
+            }
+            
 
+        } catch (error) {
+
+            if (error.response && error.response.status === 400) {
+                ToastMess({ type: 'error', text1: 'Email hoặc mật khẩu không chính xác' })
+            }
+            console.log(error)
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -38,6 +75,7 @@ export default function Login({ navigation }) {
                     placeholder="Email"
                     onChangeText={setEmail}
                     autoCapitalize="none"
+
                 />
                 <Text style={styles.textInput}>Mật khẩu</Text>
                 <InputMain
@@ -53,10 +91,17 @@ export default function Login({ navigation }) {
                 </View>
             </View>
             <View style={styles.containerFooter}>
-                <ButtonMain title={'Đăng nhập'}
-                    backgroundColor={bgButton1}
-                    textColor={white}
-                    onPress={() => handleLogin()} />
+                {loading ? (
+                    <ActivityIndicator color={orange} size={'large'} />
+                ) : (
+                    <ButtonMain
+                        title={'Đăng nhập'}
+                        backgroundColor={bgButton1}
+                        textColor={white}
+                        onPress={() => handleLogin()}
+                    />
+                )}
+
                 <View style={styleShare.lineContainer}>
                     <View style={styleShare.line}></View>
                     <Text style={styleShare.lineText}>hoặc đăng nhập bằng</Text>

@@ -1,0 +1,2 @@
+export const client_id_api = "mpv9wOzjdHUKHQv5K3Q2UWyorbrmoo2bZ8qtMD7T"
+export const client_secret_api = "9L49mqBX41sLFisuk3uJOOMAyB3KxtzWhnGFjyjfuLfzoluV5L0PaADWPENZNdKvab9gby8yhCUxuYKJr4tdccY35zEAniBc4452v5ScTdQCOHipLQye41WdMkkkApVD"

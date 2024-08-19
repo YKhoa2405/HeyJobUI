@@ -1,9 +1,13 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, TextInput, StyleSheet, Image, FlatList, TouchableWithoutFeedback, ScrollView } from "react-native";
 import styleShare from "../../assets/theme/style";
 import { bgButton1, bgButton2, grey, orange, white } from "../../assets/theme/color";
 import Icon from "react-native-vector-icons/Ionicons"
 import { Chip, Searchbar } from "react-native-paper";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { authApi, endpoints } from "../../config/API";
+import moment from "moment";
+import { ToastMess } from "../../components/ToastMess";
 
 export default function Home({ navigation }) {
     const dataJob = [
@@ -78,6 +82,32 @@ export default function Home({ navigation }) {
             },
         },
     ];
+    const [jobs, setJobs] = useState([])
+
+    useEffect(() => {
+        fetchListJob();
+    }, []);
+
+    const fetchListJob = async () => {
+        const token = await AsyncStorage.getItem("access-token");
+        const res = await authApi(token).get(endpoints['jobs']);
+        const jobs = res.data.results;
+        console.log(jobs)
+        setJobs(jobs)
+    }
+
+    const handleSaveJob = async (jobId) => {
+        try {
+            const token = await AsyncStorage.getItem("access-token");
+            await authApi(token).post(endpoints['save_job'], { job_id: jobId });
+            ToastMess({ type: 'success', text1: 'Lưu việc làm thành công.' });
+
+
+        } catch (error) {
+            console.error("Lỗi khi lưu công việc:", error);
+            ToastMess({ type: 'error', text1: 'Không thể lưu công việc. Vui lòng thử lại.' });
+        }
+    }
 
 
 
@@ -103,29 +133,33 @@ export default function Home({ navigation }) {
                         </TouchableOpacity>
 
                     </View>
-                    {dataJob.map((item) => (
+                    {jobs.map((item) => (
                         <TouchableWithoutFeedback key={item.id} onPress={() => { navigation.navigate('JobDetail', { jobId: item.id }) }}>
                             <View style={styles.jobItemContainer}>
-                                <View style={styles.btnSave}>
+                                <TouchableOpacity style={styles.btnSave} onPress={() => handleSaveJob(item.id)}>
                                     <Icon name="bookmark-outline" size={26} />
-                                </View>
+                                </TouchableOpacity>
                                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                     <View style={styles.containerAvatarJob}>
                                         <Image source={require('../../assets/images/google.png')} style={styles.avatarJob} />
                                     </View>
                                     <View>
                                         <Text style={styleShare.titleJobAndName}>{item.title}</Text>
-                                        <Text style={{ marginTop: 5 }}>{item.company.name}</Text>
+                                        <Text style={{ marginTop: 5 }}>{item.employer.employer.company_name}</Text>
                                     </View>
                                 </View>
-                                <View style={styles.infoJobContainer}>
-                                    <View>
-                                        <Chip style={styleShare.chip}>{item.company.location}</Chip>
-                                        <Chip style={styleShare.chip}>{`${item.salary.min} - ${item.salary.max} VND`}</Chip>
-                                    </View>
-                                    <View>
-                                        <Chip style={styleShare.chip}>{item.experience}</Chip>
-                                    </View>
+                                <View style={styleShare.technologyContainer}>
+                                    <Chip style={styleShare.chip}>{item.location}</Chip>
+                                    <Chip style={styleShare.chip}>{`${item.salary} VND`}</Chip>
+                                    <Chip style={styleShare.chip}>{item.experience}</Chip>
+                                    {item.technologies.map((tech, index) => (
+                                        <Chip key={index} style={styleShare.chip}>
+                                            {tech.name}
+                                        </Chip>
+                                    ))}
+                                </View>
+                                <View>
+                                    <Text>Hạn ứng tuyển: {moment(item.expiration_date).format('DD/MM/YYYY')}</Text>
                                 </View>
                             </View>
                         </TouchableWithoutFeedback>
@@ -150,7 +184,7 @@ const styles = StyleSheet.create({
         backgroundColor: bgButton1
     },
     headerMain: {
-        padding:20
+        padding: 20
     },
     jobItemContainer: {
         backgroundColor: white,
@@ -175,13 +209,13 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 20,
         right: 20,
-        opacity: 0.8
+        opacity: 0.8,
+        zIndex: 999
     },
     infoJobContainer: {
-        paddingTop: 20,
-        paddingRight: 10,
         flexDirection: 'row',
-        justifyContent: 'center'
+        flexWrap: 'wrap',
+        marginTop: 10
     },
 
 })

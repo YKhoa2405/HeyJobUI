@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useReducer } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
@@ -25,31 +25,56 @@ import ChooseRole from './src/screens/Auth/ChooseRole';
 import HomeEmployers from './src/screens/Employers/HomeEmployers';
 import Statistical from './src/screens/Employers/Statistical';
 import AddPost from './src/screens/Employers/AddPost';
+import ProfileEmployer from './src/screens/Auth/ProfileEmployer';
+import UserReducer from './src/reducer/UserReducer';
+import MyContext from './src/config/MyContext';
+import UpdateEmployer from './src/screens/Auth/UpdateEmployer';
+import ListJobEmployer from './src/screens/Job/ListJobEmployer';
+import CVApply from './src/screens/Employers/CVApply';
+import JobReducer from './src/reducer/JobReducer';
+import ApplyJob from './src/screens/Job/ApplyJob';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 // const Drawer = createDrawerNavigator();
 
+
+
 export default function App() {
+  const [user, dispatch] = useReducer(UserReducer, null);
+  // const [jobState, dispatchJob] = useReducer(JobReducer, initialJobState);
+
   return (
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="AuthStack" component={AuthStack} />
-        <Stack.Screen name="MainTab" component={MainTab} />
-        <Stack.Screen name="JobDetail" component={JobDetail} />
-        <Stack.Screen name="UploadCV" component={UploadCV} />
-        <Stack.Screen name="SaveJob" component={SaveJob} />
-        <Stack.Screen name="JobSearch" component={JobSearch} />
-        <Stack.Screen name="JobSearchDetail" component={JobSearchDetail} />
-        <Stack.Screen name="ChooseRole" component={ChooseRole} />
-        <Stack.Screen name="HomeEmployers" component={HomeEmployers} />
-        <Stack.Screen name="AddPost" component={AddPost} />
-        <Stack.Screen name="Statistical" component={Statistical} />
+    <MyContext.Provider value={[user, dispatch]}>
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="AuthStack" component={AuthStack} />
+          <Stack.Screen name="MainTab" component={MainTab} />
+          <Stack.Screen name="JobDetail" component={JobDetail} />
+          <Stack.Screen name="UploadCV" component={UploadCV} />
+          <Stack.Screen name="SaveJob" component={SaveJob} />
+          <Stack.Screen name="JobSearch" component={JobSearch} />
+          <Stack.Screen name="JobSearchDetail" component={JobSearchDetail} />
+          <Stack.Screen name="ChooseRole" component={ChooseRole} />
+          <Stack.Screen name="HomeEmployers" component={HomeEmployers} />
+          <Stack.Screen name="AddPost" component={AddPost} />
+          <Stack.Screen name="Statistical" component={Statistical} />
+          <Stack.Screen name="UpdateEmployer" component={UpdateEmployer} />
+          <Stack.Screen name="ListJobEmployer" component={ListJobEmployer} />
+          <Stack.Screen name="CVApply" component={CVApply} />
+          <Stack.Screen name="ApplyJob" component={ApplyJob} />
 
-      </Stack.Navigator>
-      <Toast />
 
-    </NavigationContainer>
+
+
+
+        </Stack.Navigator>
+        <Toast />
+
+      </NavigationContainer>
+    </MyContext.Provider>
+
+    // <UpdateEmployer></UpdateEmployer>
   );
 }
 

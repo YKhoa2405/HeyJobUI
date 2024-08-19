@@ -1,23 +1,63 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, FlatList, TouchableWithoutFeedback } from "react-native";
 import styleShare from "../../assets/theme/style";
 import Icon from "react-native-vector-icons/Ionicons"
 import { bgButton1, bgButton2, grey } from "../../assets/theme/color";
 import { Searchbar } from "react-native-paper";
+import MyContext from "../../config/MyContext";
+import { addDoc, collection, deleteDoc, getDocs, query, where } from "firebase/firestore";
+import { storeDb } from "../../config/Firebase";
+import { ToastMess } from "../../components/ToastMess";
 
 export default function JobSearch({ navigation }) {
+    const [user, dispatch] = useContext(MyContext)
     const [searchQuery, setSearchQuery] = useState('');
-    const [recentJobs, setRecentJobs] = useState([
-        { id: 1, title: 'Lập trình viên React Native', location: 'Hà Nội', company: 'Công ty A' },
-        { id: 2, title: 'Kỹ sư phần mềm', location: 'TP. Hồ Chí Minh', company: 'Công ty B' },
-        { id: 3, title: 'Quản lý dự án', location: 'Đà Nẵng', company: 'Công ty C' },
-    ]);
+    const [recentJobs, setRecentJobs] = useState([]);
+    useEffect(() => {
+        getSearchRecent();
+    }, [user.id]);
+    const saveSearchRecent = async (keyword) => {
+        const userId = user.id;
 
-    const filteredJobs = recentJobs.filter(job =>
-        job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        job.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        job.company.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+        await addDoc(collection(storeDb, 'search_recents'), {
+            userId,
+            keyword,
+        });
+    };
+    const getSearchRecent = async () => {
+        const q = query(collection(storeDb, 'search_recents'), where('userId', '==', user.id));
+        const querySnapshot = await getDocs(q);
+        const jobs = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+        }));
+        setRecentJobs(jobs.reverse());
+    };
+    const deleteAllRecentSearches = async () => {
+        const q = query(collection(storeDb, 'search_recents'), where('userId', '==', user.id));
+        const querySnapshot = await getDocs(q);
+
+        const deletePromises = querySnapshot.docs.map(doc => deleteDoc(doc.ref));
+        await Promise.all(deletePromises);
+
+        setRecentJobs([]);
+        ToastMess({ type: 'success', text1: 'Xóa lịch sử tìm kiếm thành công.' });
+
+    };
+
+    const handleSearch = async () => {
+        if (searchQuery.trim()) {
+            navigation.navigate('JobSearchDetail', { searchContent: searchQuery });
+            await saveSearchRecent(searchQuery);
+
+        }
+    };
+
+    // const filteredJobs = recentJobs.filter(job =>
+    //     job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    //     job.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    //     job.company.toLowerCase().includes(searchQuery.toLowerCase())
+    // );
     return (
         <View style={[styleShare.container, { marginHorizontal: 20 }]}>
             <View style={[styleShare.flexBetween, { marginTop: 30, marginBottom: 10 }]}>
@@ -25,14 +65,15 @@ export default function JobSearch({ navigation }) {
                 <Searchbar style={styleShare.searchComponent}
                     placeholder="Địa điểm - Công ty - Ngành nghề"
                     value={searchQuery}
-                    onChangeText={query => setSearchQuery(query)} />
+                    onChangeText={query => setSearchQuery(query)}
+                    onSubmitEditing={handleSearch} />
             </View>
 
             {searchQuery === '' ? (
                 <>
                     <View style={styleShare.flexBetween}>
                         <Text style={styleShare.titleJobAndName}>Tìm kiếm gần đây</Text>
-                        <TouchableOpacity onPress={() => setRecentJobs([])}>
+                        <TouchableOpacity onPress={() => deleteAllRecentSearches()}>
                             <Text style={{ fontWeight: '500', color: 'red' }}>Xóa tất cả</Text>
                         </TouchableOpacity>
                     </View>
@@ -44,7 +85,7 @@ export default function JobSearch({ navigation }) {
                                 <TouchableWithoutFeedback key={item.id} onPress={() => navigation.navigate('JobSearchDetail', { searchContent: item.title })}>
                                     <View style={styles.recentSearchItem}>
                                         <Icon name="search-outline" size={22} color={bgButton1} />
-                                        <Text style={styles.jobTitle}>{item.title}</Text>
+                                        <Text style={styles.jobTitle}>{item.keyword}</Text>
                                     </View>
                                 </TouchableWithoutFeedback>
                             )}
@@ -54,7 +95,7 @@ export default function JobSearch({ navigation }) {
             ) : (
                 <View>
                     <Text style={[styleShare.titleJobAndName, { marginBottom: 10 }]}>Gợi ý tìm kiếm</Text>
-                    <FlatList
+                    {/* <FlatList
                         data={filteredJobs}
                         keyExtractor={item => item.id.toString()}
                         renderItem={({ item }) => (
@@ -66,7 +107,7 @@ export default function JobSearch({ navigation }) {
                             </TouchableWithoutFeedback>
 
                         )}
-                    />
+                    /> */}
                 </View>
             )}
 

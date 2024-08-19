@@ -1,17 +1,38 @@
-import React from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, Dimensions, Image, TouchableWithoutFeedback, TouchableOpacity } from "react-native";
 import styleShare from "../../assets/theme/style";
 import { Avatar, Chip } from "react-native-paper";
 import { bgButton1, bgButton2, grey, orange, white } from "../../assets/theme/color";
 import Icon from "react-native-vector-icons/Ionicons"
+import MyContext from "../../config/MyContext";
+import ReusableModal from "../../components/ReusableModal ";
+import { authApi, endpoints } from "../../config/API";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 
 export default function Profile({ navigation }) {
+    const [user, dispatch] = useContext(MyContext)
+    const [province, setProvince] = useState([])
+    const [selectExperience, setSelectExperience] = useState('')
+    const [selectedProvince, setSelectedProvince] = useState('');
+    const [modalVisible, setModalVisible] = useState({
+        // salary: false,
+        // technology: false,
+        experience: false,
+        location: false
+    });
 
-    const profileItem = [
-        { id: 1, icon: 'sparkles', title: 'Kinh nghiệm làm việc', info: '10 năm' },
-        { id: 2, icon: 'location-sharp', title: 'Địa điểm làm việc mong muốn', info: 'Chung cư 4s, đường số 17' },
-        { id: 3, icon: 'briefcase', title: 'Công việc mong muốn', info: 'Quản lý nhân sự ' },
-    ];
+    const experiences = ['Thực tập sinh', 'Dưới 1 năm', '1 năm', '2 năm', '3 năm', '4 năm', '5 năm', 'Trên 5 năm'];
+
+    useEffect(() => {
+        fetchProvince();
+    }, []);
+    const fetchProvince = async () => {
+        const res = await axios.get('https://esgoo.net/api-tinhthanh/1/0.htm')
+        const data = res.data.data;
+        const fullNames = data.map(item => item.full_name);
+        setProvince(fullNames)
+    }
 
     const aboutApp = [
         { id: 1, icon: 'business', title: 'Về HeyJob' },
@@ -32,8 +53,7 @@ export default function Profile({ navigation }) {
                 navigation.navigate('SaveJob')
                 break;
             case 2:
-                console.log('Việc làm đã ứng tuyển clicked');
-                // Navigate to the applied jobs screen or perform other actions
+                navigation.navigate('ApplyJob')
                 break;
             case 3:
                 console.log('Công ty đã theo dõi clicked');
@@ -44,6 +64,41 @@ export default function Profile({ navigation }) {
                 break;
         }
     };
+
+    const handleLogout = async () => {
+        navigation.navigate('Login')
+        dispatch({
+            'type': 'logout'
+        })
+    }
+
+    const handleExperienceSelect = (experience) => {
+        setSelectExperience(experience);
+    };
+    const handleProvinceSelect = (province) => {
+        setSelectedProvince(province);
+    };
+
+    const handleUpdate = async (field, value) => {
+        const token = await AsyncStorage.getItem("access-token");
+        const formData = new FormData();
+        formData.append(field, value);
+
+        await authApi(token).patch(endpoints['update_seeker'], formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+    };
+
+    const handleUpdateExperience = async () => {
+        await handleUpdate('experience', selectExperience);
+    };
+
+    const handleUpdateLocation = async () => {
+        await handleUpdate('location', selectedProvince);
+    };
+
 
     const ManageJobGrid = () => (
         <View style={styles.grid}>
@@ -74,29 +129,59 @@ export default function Profile({ navigation }) {
                         style={{ marginLeft: 40, marginRight: 20 }}
                     />
                     <View>
-                        <Text style={styleShare.titleJobAndName}>NGuyen Y Khoa</Text>
-                        <Text >Californuia,USA</Text>
+                        <Text style={styleShare.titleJobAndName}>{user.username}</Text>
+                        <Text >{user.email}</Text>
                     </View>
                 </View>
                 <View style={styles.containerMain}>
-                    {profileItem.map((item) => (
-                        <View key={item.id} style={styles.profileItem}>
-                            <View style={styleShare.flexBetween}>
-                                <View style={styleShare.flexCenter}>
-                                    <Icon name={item.icon} size={24} color={orange} style={{ marginRight: 15 }} />
-                                    <Text style={styleShare.titleJobAndName}>{item.title}</Text>
-                                </View>
+                    <View style={styles.profileItem}>
+                        <View style={styleShare.flexBetween}>
+                            <View style={styleShare.flexCenter}>
+                                <Icon name='sparkles' size={24} color={orange} style={{ marginRight: 15 }} />
+                                <Text style={styleShare.titleJobAndName}>Kinh nghiệm làm việc</Text>
+                            </View>
+                            <TouchableOpacity onPress={() => setModalVisible({ ...modalVisible, experience: true })} >
                                 <Icon name="pencil" size={24} color={orange} />
-                            </View>
-                            <View style={{ marginTop: 10 }}>
-                                <Chip style={{ alignSelf: 'flex-start', backgroundColor: grey, marginBottom: 5 }}>{item.info}</Chip>
-                                <Chip style={{ alignSelf: 'flex-start', backgroundColor: grey, marginBottom: 5 }}>{item.info}</Chip>
-                                <Chip style={{ alignSelf: 'flex-start', backgroundColor: grey, marginBottom: 5 }}>{item.info}</Chip>
-
-
-                            </View>
+                            </TouchableOpacity>
                         </View>
-                    ))}
+                        <View style={styles.technologyContainer}>
+                            {user.seeker.experience ? (
+                                <Chip style={styles.chip}>{user.seeker.experience}</Chip>
+                            ) : (
+                                <Text style={styles.defaultText}>Cập nhật kinh ngiệm làm việc</Text>
+                            )}
+                        </View>
+                    </View>
+                    <View style={styles.profileItem}>
+                        <View style={styleShare.flexBetween}>
+                            <View style={styleShare.flexCenter}>
+                                <Icon name='location-sharp' size={24} color={orange} style={{ marginRight: 15 }} />
+                                <Text style={styleShare.titleJobAndName}>Địa điểm làm việc mong muốn</Text>
+                            </View>
+                            <TouchableOpacity onPress={() => setModalVisible({ ...modalVisible, location: true })} >
+                                <Icon name="pencil" size={24} color={orange} />
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.technologyContainer}>
+                            {user.seeker.location ? (
+                                <Chip style={styles.chip}>{user.seeker.location}</Chip>
+                            ) : (
+                                <Text style={styles.defaultText}>Cập nhật địa điểm làm việc</Text>
+                            )}
+                        </View>
+                    </View>
+                    <View style={styles.profileItem}>
+                        <View style={styleShare.flexBetween}>
+                            <View style={styleShare.flexCenter}>
+                                <Icon name='briefcase' size={24} color={orange} style={{ marginRight: 15 }} />
+                                <Text style={styleShare.titleJobAndName}>Công nghệ sử dụng</Text>
+                            </View>
+                            <Icon name="pencil" size={24} color={orange} />
+                        </View>
+                        <View style={styles.technologyContainer}>
+                            <Chip style={styleShare.chip}>dasdasd</Chip>
+                        </View>
+                    </View>
                     <View style={styles.manageJob}>
                         <Text style={[styleShare.titleJobAndName, { marginVertical: 10 }]}>Quản lý việc làm</Text>
                         <ManageJobGrid></ManageJobGrid>
@@ -129,7 +214,7 @@ export default function Profile({ navigation }) {
 
                         ))}
                     </View>
-                    <TouchableOpacity style={styles.manageJob} onPress={() => { navigation.navigate('Login') }}>
+                    <TouchableOpacity style={styles.manageJob} onPress={() => handleLogout()}>
                         <View style={styleShare.flexCenter}>
                             <Text style={{ fontWeight: '500', fontSize: 16, marginRight: 10, color: 'red' }}>Đăng xuất</Text>
                             <Icon name="exit" size={24} color={'red'} />
@@ -137,7 +222,36 @@ export default function Profile({ navigation }) {
                     </TouchableOpacity>
                 </View>
             </ScrollView>
-
+            <ReusableModal
+                visible={modalVisible.experience}
+                onClose={() => setModalVisible({ ...modalVisible, experience: false })}
+                title="Chọn số năm đi làm"
+                data={experiences}
+                selectedItems={selectExperience ? [selectExperience] : []}
+                onItemPress={handleExperienceSelect}
+                onComplete={() => {
+                    // Gọi hàm update dữ liệu
+                    handleUpdateExperience();
+                    // Đóng modal sau khi hoàn tất cập nhật
+                    setModalVisible({ ...modalVisible, experience: false });
+                }}
+                singleSelect={true}
+            />
+            <ReusableModal
+                visible={modalVisible.location}
+                onClose={() => setModalVisible({ ...modalVisible, location: false })}
+                title="Chọn nơi làm việc mong muốn"
+                data={province}
+                selectedItems={selectedProvince ? [selectedProvince] : []}
+                onItemPress={handleProvinceSelect}
+                onComplete={() => {
+                    // Gọi hàm update dữ liệu
+                    handleUpdateLocation();
+                    // Đóng modal sau khi hoàn tất cập nhật
+                    setModalVisible({ ...modalVisible, location: false });
+                }}
+                singleSelect={true}
+            />
         </View>
     )
 
@@ -195,6 +309,12 @@ const styles = StyleSheet.create({
     avatarJob: {
         width: 24,
         height: 24
+    },
+    technologyContainer: {
+        // Container chứa các Chip công nghệ
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        marginTop: 10
     },
 
 

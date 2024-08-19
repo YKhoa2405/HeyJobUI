@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, View, Text, Image, TouchableOpacity } from "react-native";
-import { bgButton1, orange } from "../../assets/theme/color";
+import { bgButton1, orange, white } from "../../assets/theme/color";
 import { IconButton } from "react-native-paper";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import styleShare from "../../assets/theme/style";
@@ -30,7 +30,8 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        marginHorizontal: 20
+        paddingHorizontal: 20,
+        backgroundColor:white
     }
     , desc: {
         fontWeight: 'bold',

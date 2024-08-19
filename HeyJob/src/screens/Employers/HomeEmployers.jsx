@@ -1,11 +1,18 @@
-import React from "react";
-import { View, Text, TouchableWithoutFeedback, StyleSheet, Dimensions } from "react-native";
+import React, { useContext } from "react";
+import { View, Text, TouchableWithoutFeedback, StyleSheet, Dimensions, TouchableOpacity } from "react-native";
 import styleShare from "../../assets/theme/style";
 import { Avatar, Chip } from "react-native-paper";
 import { orange, bgButton1, grey, white } from "../../assets/theme/color";
 import Icon from "react-native-vector-icons/Ionicons"
+import MyContext from "../../config/MyContext";
 
-export default function HomeEmployers({navigation}) {
+export default function HomeEmployers({ navigation }) {
+    const [user, dispatch] = useContext(MyContext)
+    const isEmployerComplete = user.employer.company_name !== null &&
+        user.employer.company_name !== ""
+
+
+
     const manageEmployers = [
         { id: 1, icon: 'megaphone-outline', title: 'Chiến dịch tuyển dụng', info: 0 },
         { id: 2, icon: 'reader-outline', title: 'CV tiếp nhận', info: 0 },
@@ -14,10 +21,10 @@ export default function HomeEmployers({navigation}) {
     ]
     const UtilitiesGrid = () => (
         <View style={styles.gridUtili}>
-            <View style={styles.gridItemUtili}>
+            <TouchableOpacity style={styles.gridItemUtili} onPress={()=>navigation.navigate('AddPost')}>
                 <Icon name={'add-circle-outline'} size={20} color={bgButton1}></Icon>
                 <Text style={styleShare.lineText}>Đăng bài</Text>
-            </View>
+            </TouchableOpacity>
         </View>
     );
 
@@ -43,10 +50,11 @@ export default function HomeEmployers({navigation}) {
     const handleManageEmployersClick = (id) => {
         switch (id) {
             case 1:
-                navigation.navigate('SaveJob')
+                navigation.navigate('ListJobEmployer')
                 break;
             case 2:
-                console.log('Việc làm đã ứng tuyển clicked');
+                navigation.navigate('CVApply')
+
                 // Navigate to the applied jobs screen or perform other actions
                 break;
             case 3:
@@ -70,12 +78,42 @@ export default function HomeEmployers({navigation}) {
                 </View>
                 <Avatar.Image source={require('../../assets/images/google.png')} size={50} />
             </View>
-            <View style={styles.containerMain}>
-                <Text style={[styleShare.titleJobAndName, { marginVertical: 10 }]}>Tiện ích</Text>
-                <UtilitiesGrid></UtilitiesGrid>
-                <Text style={[styleShare.titleJobAndName, { marginVertical: 10, marginTop: 10 }]}>Quản lý chiến dịch tuyển dụng</Text>
-                <ManageEmployersGrid></ManageEmployersGrid>
-            </View>
+            {user.employer.approval_status === true ? (
+                <View style={styles.containerMain}>
+                    <Text style={[styleShare.titleJobAndName, { marginVertical: 10 }]}>Tiện ích</Text>
+                    <UtilitiesGrid />
+                    <Text style={[styleShare.titleJobAndName, { marginVertical: 10, marginTop: 10 }]}>Quản lý chiến dịch tuyển dụng</Text>
+                    <ManageEmployersGrid />
+                </View>
+            ) : (
+                <View style={styles.containerMain}>
+                    <TouchableOpacity
+                        style={styles.itemUploadCompany}
+                        onPress={() => navigation.navigate('UpdateEmployer')}
+                        disabled={isEmployerComplete} // Khi hoàn thành, nút sẽ không nhấn được
+                    >
+                        <View style={styleShare.flexBetween}>
+                            <Text style={styleShare.titleJobAndName}>
+                                {isEmployerComplete ? "Đã hoàn thành" : "Cập nhật thông tin về công ty"}
+                            </Text>
+                            <Icon
+                                name={isEmployerComplete ? "checkmark-circle-sharp" : "arrow-forward-circle"}
+                                size={30}
+                                color={orange}
+                            />
+                        </View>
+                    </TouchableOpacity>
+                    <View style={styles.itemUploadCompany}>
+                        <TouchableOpacity style={styleShare.flexBetween}>
+                            <Text style={styleShare.titleJobAndName}>Tải lên các giấy tờ cần thiết</Text>
+                            <Icon name="arrow-forward-circle" size={30} color={orange} />
+                        </TouchableOpacity>
+                    </View>
+                    <View style={{ marginTop: 20, padding: 20 }}>
+                        <Text style={styleShare.titleJobAndName}>Sau khi hoàn thành các yêu cầu, quản trị viên sẽ duyệt tài khoản trở thành nhà tuyển dụng </Text>
+                    </View>
+                </View>
+            )}
         </View>
     )
 }
@@ -116,6 +154,11 @@ const styles = StyleSheet.create({
     }
     , gridItemUtili: {
         alignItems: 'center'
-    
+    },
+    itemUploadCompany: {
+        backgroundColor: white,
+        padding: 20,
+        borderRadius: 20,
+        marginTop: 20
     }
 })
