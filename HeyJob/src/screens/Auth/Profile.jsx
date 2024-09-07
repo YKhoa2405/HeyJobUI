@@ -6,32 +6,52 @@ import { bgButton1, bgButton2, grey, orange, white } from "../../assets/theme/co
 import Icon from "react-native-vector-icons/Ionicons"
 import MyContext from "../../config/MyContext";
 import ReusableModal from "../../components/ReusableModal ";
-import { authApi, endpoints } from "../../config/API";
+import API, { authApi, endpoints } from "../../config/API";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import { ToastMess } from "../../components/ToastMess";
 
 export default function Profile({ navigation }) {
     const [user, dispatch] = useContext(MyContext)
+    
     const [province, setProvince] = useState([])
     const [selectExperience, setSelectExperience] = useState('')
     const [selectedProvince, setSelectedProvince] = useState('');
+    const [selectedTechnologies, setSelectedTechnologies] = useState([]);
     const [modalVisible, setModalVisible] = useState({
         // salary: false,
-        // technology: false,
+        technology: false,
         experience: false,
         location: false
     });
+    const [technologies, setTechnologies] = useState([]);
 
     const experiences = ['Thực tập sinh', 'Dưới 1 năm', '1 năm', '2 năm', '3 năm', '4 năm', '5 năm', 'Trên 5 năm'];
 
     useEffect(() => {
         fetchProvince();
+        fetchTechnology()
     }, []);
     const fetchProvince = async () => {
         const res = await axios.get('https://esgoo.net/api-tinhthanh/1/0.htm')
         const data = res.data.data;
         const fullNames = data.map(item => item.full_name);
         setProvince(fullNames)
+    }
+
+    const fetchTechnology = async () => {
+        try {
+            const res = await API.get(endpoints['technology']);
+            console.log(res.data.results)
+            if (Array.isArray(res.data.results)) {
+                const techNames = res.data.results.map(item => item.name); // Chuyển đổi thành mảng các chuỗi
+                setTechnologies(techNames);
+            } else {
+                console.error("res.data.results is not an array");
+            }
+        } catch (error) {
+            console.error("Error fetching technology data", error);
+        }
     }
 
     const aboutApp = [
@@ -42,9 +62,9 @@ export default function Profile({ navigation }) {
     ]
 
     const manageJob = [
-        { id: 1, icon: 'bookmark', title: 'Việc làm đã lưu', info: '5' },
-        { id: 2, icon: 'briefcase', title: 'Việc làm đã ứng tuyển', info: '5' },
-        { id: 3, icon: 'business', title: 'Công ty đã theo dõi', info: '5' },
+        { id: 1, icon: 'bookmark', title: 'Việc làm đã lưu', info: user.seeker.saved_count },
+        { id: 2, icon: 'briefcase', title: 'Việc làm đã ứng tuyển', info: user.seeker.apply_count },
+        { id: 3, icon: 'business', title: 'Công ty đã theo dõi', info: user.seeker.following_count },
     ]
 
     const handleManageJobClick = (id) => {
@@ -57,7 +77,8 @@ export default function Profile({ navigation }) {
                 break;
             case 3:
                 console.log('Công ty đã theo dõi clicked');
-                // Navigate to the followed companies screen or perform other actions
+                navigation.navigate('ListFollow')
+
                 break;
             default:
                 console.log('Unknown item clicked');
@@ -78,19 +99,40 @@ export default function Profile({ navigation }) {
     const handleProvinceSelect = (province) => {
         setSelectedProvince(province);
     };
+    const handleTechnologySelect = (technology) => {
+        setSelectedTechnologies(prevTechnologies =>
+            prevTechnologies.includes(technology)
+                ? prevTechnologies.filter(item => item !== technology)
+                : [...prevTechnologies, technology]
+        );
+    };
 
     const handleUpdate = async (field, value) => {
         const token = await AsyncStorage.getItem("access-token");
         const formData = new FormData();
         formData.append(field, value);
+        try {
+            await authApi(token).patch(endpoints['update_seeker'], formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            ToastMess({ type: 'success', text1: 'Cập nhật thông tin thành.' });
 
-        await authApi(token).patch(endpoints['update_seeker'], formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
+        } catch (error) {
+            ToastMess({ type: 'error', text1: 'Có lỗi xảy ra, vui lòng thử lại.' });
+
+        }
     };
 
+    const handleUpdateTechnology = async () => {
+        try {
+            await handleUpdate('technologies', selectedTechnologies);
+            console.log(selectedTechnologies)
+        } catch (error) {
+            console.error("Error updating technologies:", error);
+        }
+    };
     const handleUpdateExperience = async () => {
         await handleUpdate('experience', selectExperience);
     };
@@ -98,6 +140,7 @@ export default function Profile({ navigation }) {
     const handleUpdateLocation = async () => {
         await handleUpdate('location', selectedProvince);
     };
+
 
 
     const ManageJobGrid = () => (
@@ -124,9 +167,9 @@ export default function Profile({ navigation }) {
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }}>
                 <View style={styles.containerTop}>
                     <Avatar.Image
-                        source={require('../../assets/images/google.png')}
+                        source={{ uri: user.avatar }}
                         size={60}
-                        style={{ marginLeft: 40, marginRight: 20 }}
+                        style={{ marginLeft: 40, marginRight: 20, backgroundColor:'white' }}
                     />
                     <View>
                         <Text style={styleShare.titleJobAndName}>{user.username}</Text>
@@ -146,7 +189,7 @@ export default function Profile({ navigation }) {
                         </View>
                         <View style={styles.technologyContainer}>
                             {user.seeker.experience ? (
-                                <Chip style={styles.chip}>{user.seeker.experience}</Chip>
+                                <Chip style={styleShare.chip}>{user.seeker.experience}</Chip>
                             ) : (
                                 <Text style={styles.defaultText}>Cập nhật kinh ngiệm làm việc</Text>
                             )}
@@ -164,7 +207,7 @@ export default function Profile({ navigation }) {
                         </View>
                         <View style={styles.technologyContainer}>
                             {user.seeker.location ? (
-                                <Chip style={styles.chip}>{user.seeker.location}</Chip>
+                                <Chip style={styleShare.chip}>{user.seeker.location}</Chip>
                             ) : (
                                 <Text style={styles.defaultText}>Cập nhật địa điểm làm việc</Text>
                             )}
@@ -174,12 +217,20 @@ export default function Profile({ navigation }) {
                         <View style={styleShare.flexBetween}>
                             <View style={styleShare.flexCenter}>
                                 <Icon name='briefcase' size={24} color={orange} style={{ marginRight: 15 }} />
-                                <Text style={styleShare.titleJobAndName}>Công nghệ sử dụng</Text>
+                                <Text style={styleShare.titleJobAndName}>Kĩ năng</Text>
                             </View>
-                            <Icon name="pencil" size={24} color={orange} />
+                            <TouchableOpacity onPress={() => setModalVisible({ ...modalVisible, technology: true })} >
+                                <Icon name="pencil" size={24} color={orange} />
+                            </TouchableOpacity>
                         </View>
                         <View style={styles.technologyContainer}>
-                            <Chip style={styleShare.chip}>dasdasd</Chip>
+                            {user.seeker.technologies && user.seeker.technologies.length > 0 ? (
+                                user.seeker.technologies.map(tech => (
+                                    <Chip key={tech.id} style={styleShare.chip}>{tech.name}</Chip>
+                                ))
+                            ) : (
+                                <Text style={styles.defaultText}>Cập nhật kĩ năng của bạn</Text>
+                            )}
                         </View>
                     </View>
                     <View style={styles.manageJob}>
@@ -251,6 +302,18 @@ export default function Profile({ navigation }) {
                     setModalVisible({ ...modalVisible, location: false });
                 }}
                 singleSelect={true}
+            />
+            <ReusableModal
+                visible={modalVisible.technology}
+                onClose={() => setModalVisible({ ...modalVisible, technology: false })}
+                title="Chọn kĩ năng của bạn"
+                data={technologies}
+                selectedItems={selectedTechnologies}
+                onItemPress={handleTechnologySelect}
+                onComplete={() => {
+                    handleUpdateTechnology()
+                    setModalVisible({ ...modalVisible, technology: false })
+                }}
             />
         </View>
     )

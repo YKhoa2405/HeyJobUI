@@ -1,126 +1,125 @@
-import React from "react";
-import { View, ScrollView, Text, StyleSheet, TouchableWithoutFeedback, Image } from "react-native";
+import React, { useContext, useEffect, useState } from "react";
+import { View, ScrollView, Text, StyleSheet, TouchableWithoutFeedback, Image, ActivityIndicator, FlatList, TouchableOpacity, Alert, Linking } from "react-native";
 import styleShare from "../../assets/theme/style";
 import UIHeader from "../../components/UIHeader";
 import Icon from "react-native-vector-icons/Ionicons"
-import { Chip } from "react-native-paper";
-import { bgButton2, white } from "../../assets/theme/color";
+import moment from "moment";
+import 'moment/locale/vi';
+import { Avatar, Chip } from "react-native-paper";
+import { bgButton1, bgButton2, grey, orange, white } from "../../assets/theme/color";
+import { authApi, endpoints } from "../../config/API";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import ButtonMain from "../../components/ButtonMain";
 
-export default function ApplyJob({navigation}) {
-    const jobSave = [
-        // {
-        //     id: 1,
-        //     image: 'https://example.com/image1.png',
-        //     title: 'Kỹ sư phần mềm',
-        //     company: {
-        //         name: 'Công ty A',
-        //         location: 'Hà Nội, Việt Nam',
-        //     },
-        //     experience: '2-3 năm',
-        //     salary: {
-        //         min: 1000,
-        //         max: 1500,
-        //     },
-        // },
-        // {
-        //     id: 2,
-        //     image: 'https://example.com/image2.png',
-        //     title: 'Chuyên viên phân tích dữ liệu',
-        //     company: {
-        //         name: 'Công ty B',
-        //         location: 'TP. Hồ Chí Minh, Việt Nam',
-        //     },
-        //     experience: '1-2 năm',
-        //     salary: {
-        //         min: 800,
-        //         max: 1200,
-        //     },
-        // },
-        // {
-        //     id: 3,
-        //     image: 'https://example.com/image3.png',
-        //     title: 'Quản lý dự án',
-        //     company: {
-        //         name: 'Công ty C',
-        //         location: 'Đà Nẵng, Việt Nam',
-        //     },
-        //     experience: '5+ năm',
-        //     salary: {
-        //         min: 1500,
-        //         max: 2000,
-        //     },
-        // },
-        // {
-        //     id: 4,
-        //     image: 'https://example.com/image4.png',
-        //     title: 'Nhân viên kinh doanh',
-        //     company: {
-        //         name: 'Công ty D',
-        //         location: 'Cần Thơ, Việt Nam',
-        //     },
-        //     experience: '1-2 năm',
-        //     salary: {
-        //         min: 700,
-        //         max: 1000,
-        //     },
-        // },
-        // {
-        //     id: 5,
-        //     image: 'https://example.com/image5.png',
-        //     title: 'Thiết kế đồ họa',
-        //     company: {
-        //         name: 'Công ty E',
-        //         location: 'Hải Phòng, Việt Nam',
-        //     },
-        //     experience: '2-3 năm',
-        //     salary: {
-        //         min: 900,
-        //         max: 1300,
-        //     },
-        // },
-    ];
+export default function ApplyJob({ navigation }) {
+    const [jobs, setJobs] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    moment.locale('vi');
+    useEffect(() => {
+        fetchApplyJob(); // Gọi hàm fetch khi component mount
+    }, []);
+    const fetchApplyJob = async () => {
+        try {
+            const token = await AsyncStorage.getItem("access-token");
+            const res = await authApi(token).get(endpoints['apply_list_seeker']);
+            setJobs(res.data);
+            console.log(res.data)
+        } catch (error) {
+            console.error("Error fetching jobs:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleOpenCv = (url) => {
+        Linking.openURL(url).catch(err => console.error("Failed to open URL:", err));
+    }
+
+
+    const renderItem = ({ item }) => {
+        const getStatusInfo = (status) => {
+            switch (status) {
+                case 'PENDING':
+                    return { text: 'Chờ xử lý', style: { color: bgButton1 } }; // Màu cho trạng thái chờ xử lý
+                case 'CLOSED':
+                    return { text: 'Đã từ chối', style: { color: 'red' } }; // Màu cho trạng thái đã từ chối
+                case 'OPEN':
+                    return { text: 'Đã đồng ý', style: { color: 'green' } }; // Màu cho trạng thái đã đồng ý
+                default:
+                    return { text: 'Trạng thái không xác định', style: { color: 'gray' } }; // Màu cho trạng thái không xác định
+            }
+        };
+        const statusInfo = getStatusInfo(item.status);
+        return (
+            <View key={item.id}>
+                <View style={styles.jobItemContainer}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View style={styles.containerAvatarJob}>
+                            <Avatar.Image source={{ uri: item.job.employer.avatar }} size={36} style={{ backgroundColor: 'white' }} />
+                        </View>
+                        <View>
+                            <Text style={styleShare.titleJobAndName}>{item.job.title}</Text>
+                            <Text style={{ marginTop: 5 }}>{item.job.employer.employer.company_name}</Text>
+                        </View>
+                    </View>
+                    <View style={styleShare.technologyContainer}>
+                        <Chip style={styleShare.chip}>{item.job.location}</Chip>
+                        <Chip style={styleShare.chip}>{`${item.job.salary} VND`}</Chip>
+                        <Chip style={styleShare.chip}>{item.job.experience}</Chip>
+                        {item.job.technologies.map((tech, index) => (
+                            <Chip key={index} style={styleShare.chip}>
+                                {tech.name}
+                            </Chip>
+                        ))}
+                    </View>
+                    <View style={styleShare.flexBetween}>
+                        <View style={styleShare.flexCenter}>
+                            <Icon name="time" size={22} color={'grey'} style={{ marginRight: 5 }} />
+                            <Text>{moment(item.job.create_date).format('DD/MM/YYYY')}</Text>
+                        </View>
+                        <Text style={[styleShare.titleJobAndName, statusInfo.style]}>
+                            {statusInfo.text}
+                        </Text>
+                    </View>
+                    <View>
+                        <TouchableOpacity onPress={() => handleOpenCv(item.cv)}>
+                            <View style={styleShare.buttonDetailApply}>
+                                <Icon name="document-outline" size={22} />
+                                <Text style={{ marginLeft: 5 }}>Xem lại CV</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </View>
+
+        )
+    };
+
+    if (loading) {
+        return <ActivityIndicator style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} size="large" color='orange' />;
+    }
+
     return (
         <View style={styleShare.container}>
             <UIHeader leftIcon={"arrow-back"}
                 rightIcon={"ellipsis-horizontal"}
                 title={'Việc làm đã ứng tuyển'}
                 handleLeftIcon={() => { navigation.goBack() }} />
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40, paddingTop: 10 }}>
-                <View>
-                    {jobSave.length === 0 ? (
-                        <View style={{marginTop: 50, alignItems:'center'}}>
-                            <Image source={require("../../assets/images/save.png")} style={styleShare.imageNullData} />
-                            <Text style={styleShare.textMainOption}>Bạn chưa ứng tuyển việc làm nào</Text>
-                            <Text style={{padding:20, textAlign:'center'}}>Bạn không có bất kỳ đơn ứng tuyển nào, hãy tìm kiếm thêm các bài tuyển dụng </Text>
-                        </View>
-                    ) : (
-                        jobSave.map((item) => (
-                            <TouchableWithoutFeedback key={item.id} onPress={() => { navigation.navigate('JobDetail', { jobId: item.id }) }}>
-                                <View style={styles.jobItemContainer}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <View style={styles.containerAvatarJob}>
-                                            <Image source={require('../../assets/images/google.png')} style={styles.avatarJob} />
-                                        </View>
-                                        <View>
-                                            <Text style={styleShare.titleJobAndName}>{item.title}</Text>
-                                            <Text style={{ marginTop: 5 }}>{item.company.name}</Text>
-                                        </View>
-                                    </View>
-                                    <View style={styles.infoJobContainer}>
-                                        <View>
-                                            <Chip style={styleShare.chip}>{item.company.location}</Chip>
-                                            <Chip style={styleShare.chip}>{`${item.salary.min} - ${item.salary.max} VND`}</Chip>
-                                        </View>
-                                        <View>
-                                            <Chip style={styleShare.chip}>{item.experience}</Chip>
-                                        </View>
-                                    </View>
-                                </View>
-                            </TouchableWithoutFeedback>
-                        ))
-                    )}
-                </View>
-            </ScrollView>
+            <FlatList
+                data={jobs}
+                renderItem={renderItem}
+                showsVerticalScrollIndicator={false}
+                keyExtractor={item => item.job.id.toString()}
+                ListEmptyComponent={
+                    <View style={{ marginTop: 50, alignItems: 'center' }}>
+                        <Image source={require("../../assets/images/save.png")} style={styleShare.imageNullData} />
+                        <Text style={styleShare.textMainOption}>Bạn chưa ứng tuyển việc làm nào</Text>
+                        <Text style={{ padding: 20, textAlign: 'center' }}>Hãy tích cực ứng tuyển để có cơ hội tìm được việc làm tiềm năng</Text>
+                    </View>
+                }
+                contentContainerStyle={{ paddingBottom: 40, paddingTop: 10 }}
+            />
 
         </View>
     )
@@ -132,8 +131,10 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         padding: 20,
         backgroundColor: white,
-        marginTop: 15
+        marginTop: 15,
+        marginHorizontal: 20
     },
+
     containerAvatarJob: {
         width: 50,
         height: 50,
@@ -147,10 +148,12 @@ const styles = StyleSheet.create({
         width: 30,
         height: 30
     },
-    infoJobContainer: {
-        paddingTop: 20,
-        paddingRight: 10,
-        flexDirection: 'row',
-        justifyContent: 'center'
-    }
+    btnSave: {
+        position: 'absolute',
+        top: 20,
+        right: 20,
+        opacity: 0.8,
+        zIndex: 999
+    },
+
 })

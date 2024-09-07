@@ -2,13 +2,12 @@ import React, { useEffect, useState } from "react";
 import { StyleSheet, View, Text, Image, TouchableOpacity, ActivityIndicator } from "react-native";
 import styleShare from "../../assets/theme/style";
 import UIHeader from "../../components/UIHeader";
-import ButtonMain from "../../components/ButtonMain";
 import { bgButton1, white } from "../../assets/theme/color";
 import { ToastMess } from "../../components/ToastMess";
 import API, { endpoints } from "../../config/API";
 
 export default function ChooseRole({ navigation, route }) {
-    const { email, password, userName } = route.params;
+    const { email, password, userName, avatar } = route.params;
     const [role, setRole] = useState(null);
     const [isLoading, setIsLoading] = useState(false)
 
@@ -25,11 +24,21 @@ export default function ChooseRole({ navigation, route }) {
     }
 
     const handleSignUp = async () => {
-
+        setIsLoading(true)
         let formRegister = new FormData();
         formRegister.append('username', userName);
         formRegister.append('email', email);
         formRegister.append('password', password);
+        if (avatar) {
+            const uriParts = avatar.split('.');
+            const fileType = uriParts[uriParts.length - 1];  // Lấy phần mở rộng file (jpg, png, v.v)
+            
+            formRegister.append('avatar', {
+                uri: avatar,  // Đường dẫn URI của ảnh
+                name: `avatar.${fileType}`,  // Tên file (ví dụ: avatar.jpg)
+                type: `image/${fileType}`,  // Loại file (MIME type: image/jpg, image/png, v.v)
+            });
+        }
         formRegister.append('role', role);
 
         console.log(formRegister)
@@ -44,22 +53,26 @@ export default function ChooseRole({ navigation, route }) {
             // setIsLoading(false);
             ToastMess({ type: 'success', text1: 'Đăng ký tài khoản thành công' })
 
-            if(role == 'Ung vien'){
+            if (role == 'Ung vien') {
                 navigation.navigate('Login')
             } else {
                 navigation.navigate('UpdateEmployer')
             }
         } catch (error) {
-            // setIsLoading(false);
             console.log(error)
             // // Xử lý lỗi
             // if (error.response && error.response.status === 400) {
             //     ToastMess({ type: 'error', text1: 'Người dùng đã tồn tại' })
             // } else {
-            //     ToastMess({ type: 'error', text1: 'Có lỗi xảy ra, vui lòng thử lại' })
             // }
+        } finally{
+            setIsLoading(false)
         }
     }
+    if (isLoading) {
+        return <ActivityIndicator style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} size="large" color='orange' />;
+    }
+
     return (
         <View style={styleShare.container}>
             {/* <ActivityIndicator /> */}

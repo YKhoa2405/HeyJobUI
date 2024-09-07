@@ -10,4 +10,13 @@ const UserReducer = (currentState, action) => {
     return currentState
 }
 
+const EmployerReducer = (state, action) => {
+    switch (action.type) {
+        case 'updateEmployer':
+            return action.payload;
+    }
+    return state
+}
+
+export {EmployerReducer}
 export default UserReducer

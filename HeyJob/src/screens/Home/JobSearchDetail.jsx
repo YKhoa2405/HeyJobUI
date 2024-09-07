@@ -16,9 +16,10 @@ export default function JobSearchDetail({ navigation, route }) {
     const [loading, setLoading] = useState(false);
     const { searchContent } = route.params
     const [user, dispatch] = useContext(MyContext)
-    const [province, setProvince] = useState()
-    const [selectExperience, setSelectExperience] = useState('')
-    const [selectedProvince, setSelectedProvince] = useState('');
+    const [province, setProvince] = useState("")
+    const [selectExperience, setSelectExperience] = useState(user.seeker.experience)
+    const [selectedProvince, setSelectedProvince] = useState(user.seeker.location);
+    console.log(selectedProvince)
     const [selectedSalary, setSelectedSalary] = useState('')
     const salaries = ['Dưới 5 triệu', '10 - 15  triệu', '15 - 20 triệu', '20 - 25 triệu', '25 - 30 triệu', '30 - 50 triệu', 'Trên 50 triệu', 'Thỏa thuận'];
     const experiences = ['Không yêu cầu', 'Thực tập sinh', 'Dưới 1 năm', '1 năm', '2 năm', '3 năm', '4 năm', '5 năm', 'Trên 5 năm'];
@@ -47,7 +48,7 @@ export default function JobSearchDetail({ navigation, route }) {
     const fetchProvince = async () => {
         const res = await axios.get('https://esgoo.net/api-tinhthanh/1/0.htm')
         const data = res.data.data;
-        const fullNames = data.map(item => item.name);
+        const fullNames = data.map(item => item.full_name);
         setProvince(fullNames)
     }
 

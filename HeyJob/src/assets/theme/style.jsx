@@ -60,7 +60,7 @@ const styleShare = StyleSheet.create({
         width: 84,
         height: 84,
         borderRadius: 42,
-        backgroundColor: bgImage,
+        backgroundColor: bgButton2,
         alignItems: 'center',
         justifyContent: 'center',
         position: 'absolute',
@@ -96,12 +96,12 @@ const styleShare = StyleSheet.create({
         marginTop: 10
     },
     searchComponent: {
-        borderRadius: 20,
+        borderRadius: 30,
         width: '85%',
         marginRight: 10,
         backgroundColor: white,
         borderWidth: 1,
-        borderColor: grey
+        borderColor: grey,
     },
     imageNullData: {
         width: 200,
@@ -116,6 +116,16 @@ const styleShare = StyleSheet.create({
         flexWrap: 'wrap',
         marginTop: 10
     },
+    buttonDetailApply: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: grey,
+        paddingHorizontal: 24,
+        paddingVertical: 10,
+        borderRadius: 10,
+        marginTop: 10
+    }
 })
 
 export default styleShare

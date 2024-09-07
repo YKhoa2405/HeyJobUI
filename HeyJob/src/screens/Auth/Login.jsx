@@ -28,8 +28,12 @@ export default function Login({ navigation }) {
                 'Content-Type': 'application/x-www-form-urlencoded' // Change Content-Type
             };
             let data = {
-                username: 'Ungvien24',
+                username: 'ungvien',
+                // username: 'nhatuyendung',
+
+                // password: 'caichyrua',
                 password: '123456',
+
                 client_id: client_id_api,
                 client_secret: client_secret_api,
                 grant_type: "password",
@@ -47,7 +51,7 @@ export default function Login({ navigation }) {
             if(user.data.role == 'Ung vien'){
                 navigation.navigate('MainTab')
             } else{
-                navigation.navigate('HomeEmployers')
+                navigation.navigate('EmployerTab')
             }
             
 
@@ -70,9 +74,9 @@ export default function Login({ navigation }) {
                 <Text>công việc theo chuyên môn và nhiều hơn thế nữa</Text>
             </View>
             <View style={styles.containerMain}>
-                <Text style={styles.textInput}>Email</Text>
+                <Text style={styles.textInput}>Tên tài khoản</Text>
                 <InputMain
-                    placeholder="Email"
+                    placeholder="Tên tài khoản"
                     onChangeText={setEmail}
                     autoCapitalize="none"
 

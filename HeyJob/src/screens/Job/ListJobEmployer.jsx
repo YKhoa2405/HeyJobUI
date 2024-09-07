@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useReducer, useState } from "react";
 import { View, ScrollView, Text, StyleSheet, TouchableWithoutFeedback, Image, ActivityIndicator, FlatList, TouchableOpacity, Alert } from "react-native";
 import styleShare from "../../assets/theme/style";
 import UIHeader from "../../components/UIHeader";
@@ -6,24 +6,26 @@ import Icon from "react-native-vector-icons/Ionicons"
 import moment from "moment";
 import 'moment/locale/vi';
 import { Chip } from "react-native-paper";
-import { bgButton2, orange, white } from "../../assets/theme/color";
+import { bgButton1, bgButton2, orange, white } from "../../assets/theme/color";
 import { authApi, endpoints } from "../../config/API";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ToastMess } from "../../components/ToastMess";
 import MyContext from "../../config/MyContext";
+import JobReducer, { initialState } from "../../reducer/JobReducer";
 
 export default function ListJobEmployer({ navigation }) {
-    const [jobs, setJobs] = useState([]);
+    // const [jobs, setJobs] = useState([]);
+
     const [loading, setLoading] = useState(true);
-    const [jobState, dispatchJob] = useContext(MyContext);
+    const [jobs, dispatch] = useReducer(JobReducer, initialState)
 
     moment.locale('vi');
 
     const fetchJobEmployer = async () => {
         try {
             const token = await AsyncStorage.getItem("access-token");
-            const res = await authApi(token).get(endpoints['job_employer']);
-            setJobs(res.data);
+            const res = await authApi(token).get(endpoints['job_employer_current']);
+            dispatch({ type: 'FETCH_JOBS_SUCCESS', payload: res.data });
             console.log(res.data);
         } catch (error) {
             console.error("Error fetching jobs:", error);
@@ -51,9 +53,40 @@ export default function ListJobEmployer({ navigation }) {
                         try {
                             const token = await AsyncStorage.getItem("access-token");
                             await authApi(token).delete(endpoints['jobs_detail'](jobId));
+                            console.log(jobId)
+                            dispatch({ type: 'DELETE_JOB_SUCCESS', payload: jobId });
                             ToastMess({ type: 'success', text1: 'Xóa tin tuyển dụng thành công.' });
-                            dispatchJob({ type: 'DELETE_JOB_SUCCESS', payload: jobId });
 
+                        } catch (error) {
+                            console.log(error)
+                            console.log(jobId)
+
+                        }
+                    },
+                    style: "destructive"
+                }
+            ],
+            { cancelable: true }
+        );
+    };
+
+    const handleUpdateActiveJob = async (jobId) => {
+        Alert.alert(
+            "Ngừng tuyển dụng",
+            "Xác định tin tuyển dụng hết hiệu lực?",
+            [
+                {
+                    text: "Hủy",
+                    style: "cancel"
+                },
+                {
+                    text: "Đồng ý",
+                    onPress: async () => {
+                        try {
+                            const token = await AsyncStorage.getItem("access-token");
+                            await authApi(token).patch(endpoints['jobs_detail'](jobId), { is_active: false });
+                            dispatch({ type: 'UPDATE_ACTIVE_JOBS', payload: jobId });
+                            ToastMess({ type: 'success', text1: 'Cập nhật thành công.' });
                         } catch (error) {
                             console.log(error)
                         }
@@ -67,7 +100,7 @@ export default function ListJobEmployer({ navigation }) {
 
     const renderItem = ({ item }) => {
         return (
-            <TouchableWithoutFeedback onPress={() => navigation.navigate('JobDetail', { jobId: item.id })}>
+            <View>
                 <View style={styles.jobItemContainer}>
                     <View style={styleShare.flexBetween}>
                         <Text style={styleShare.titleJobAndName}>{item.title}</Text>
@@ -75,15 +108,17 @@ export default function ListJobEmployer({ navigation }) {
                             <TouchableOpacity style={{ zIndex: 999 }} onPress={() => handleDeleteJob(item.id)}>
                                 <Icon name="trash-outline" size={24} color={'red'} />
                             </TouchableOpacity>
-
-                            {/* <TouchableOpacity style={{ zIndex: 999 }}>
-                                <Icon name="lock-closed" size={24} color={'green'} />
-                            </TouchableOpacity> */}
+                            {item.is_active ? <TouchableOpacity style={{ zIndex: 999 }} onPress={() => handleUpdateActiveJob(item.id)}>
+                                <Icon name="notifications-circle" size={24} style={{ marginLeft: 10 }} color={orange} />
+                            </TouchableOpacity>
+                                : <View style={{ zIndex: 999 }}>
+                                    <Icon name="notifications-off-circle" size={24} style={{ marginLeft: 10 }} color={bgButton1} />
+                                </View>}
                         </View>
                     </View>
-                    <Text style={styleShare.textAlign}>{item.location}</Text>
-                    <Text style={styleShare.textAlign}>{item.salary}</Text>
                     <View style={styles.technologyContainer}>
+                        <Chip style={styleShare.chip}>{item.location}</Chip>
+                        <Chip style={styleShare.chip}>{item.salary}</Chip>
                         {item.technologies.map((tech, index) => (
                             <Chip key={index} style={styleShare.chip}>
                                 {tech.name}
@@ -96,11 +131,12 @@ export default function ListJobEmployer({ navigation }) {
                             <Text>Hết hạn vào {moment(item.expiration_date).format('DD/MM/YYYY')}</Text>
                         </View>
                         <View>
-                            <Text style={[styleShare.titleJobAndName, { color: orange }]}>Hết hạn</Text>
+                            {item.is_active ? <Text style={[styleShare.titleJobAndName, { color: orange }]}>Đang hoạt động</Text>
+                                : <Text style={[styleShare.titleJobAndName, { color: bgButton1 }]}>Hết hạn</Text>}
                         </View>
                     </View>
                 </View>
-            </TouchableWithoutFeedback>
+            </View>
         )
     };
 
@@ -115,7 +151,7 @@ export default function ListJobEmployer({ navigation }) {
                 title={'Chiến dịch tuyển dụng'}
                 handleLeftIcon={() => { navigation.goBack() }} />
             <FlatList
-                data={jobs}
+                data={jobs.jobs}
                 renderItem={renderItem}
                 keyExtractor={item => item.id.toString()}
                 ListEmptyComponent={

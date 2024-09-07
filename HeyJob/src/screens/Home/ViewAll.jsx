@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useReducer, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { View, ScrollView, Text, StyleSheet, TouchableWithoutFeedback, Image, ActivityIndicator, FlatList, TouchableOpacity, Alert } from "react-native";
 import styleShare from "../../assets/theme/style";
 import UIHeader from "../../components/UIHeader";
@@ -6,74 +6,69 @@ import Icon from "react-native-vector-icons/Ionicons"
 import moment from "moment";
 import 'moment/locale/vi';
 import { Avatar, Chip } from "react-native-paper";
-import { bgButton2, orange, white } from "../../assets/theme/color";
+import { bgButton1, bgButton2, orange, white } from "../../assets/theme/color";
 import { authApi, endpoints } from "../../config/API";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ToastMess } from "../../components/ToastMess";
 import MyContext from "../../config/MyContext";
-import JobReducer, { initialState } from "../../reducer/JobReducer";
 
-export default function SaveJob({ navigation }) {
-    // const [jobs, setJobs] = useState([]);
+export default function ViewAll({ navigation, route }) {
+    const { title, api } = route.params;
+    console.log(api)
     const [loading, setLoading] = useState(true);
-    const [state, dispatch] = useReducer(JobReducer, initialState)
-
-    moment.locale('vi');
+    const [jobs, setJobs] = useState([])
     useEffect(() => {
-        fetchSaveJob(); // Gọi hàm fetch khi component mount
-    }, []);
-    const fetchSaveJob = async () => {
-        try {
-            const token = await AsyncStorage.getItem("access-token");
-            const res = await authApi(token).get(endpoints['save_job']);
-            // setJobs(res.data);
-            dispatch({ type: 'FETCH_JOBS_SUCCESS', payload: res.data });
+        fetchJob()
+    }, [])
 
-        } catch (error) {
-            console.error("Error fetching jobs:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleUnsaveJob = async (jobId) => {
-        try {
-            const token = await AsyncStorage.getItem("access-token");
-            await authApi(token).delete(endpoints['unsave_job'](jobId));
-            dispatch({ type: 'UNSAVE_JOB_SUCCESS', payload: jobId });
-            ToastMess({ type: 'success', text1: 'Đã bỏ lưu việc làm.' });
-
-        } catch (error) {
-            console.error("Error fetching jobs:", error);
-        } finally {
-            setLoading(false);
-        }
+    const fetchJob = async () => {
+        const token = await AsyncStorage.getItem("access-token");
+        const res = await authApi(token).get(endpoints[api]);
+        setJobs(res.data)
+        console.log(res.data)
+        setLoading(false)
     }
 
+    const handleSaveJob = async (jobId) => {
+        try {
+            const token = await AsyncStorage.getItem("access-token");
+            await authApi(token).post(endpoints['save_job'], { job_id: jobId });
+            ToastMess({ type: 'success', text1: 'Lưu việc làm thành công.' });
 
 
+        } catch (error) {
+            console.error("Lỗi khi lưu công việc:", error);
+            ToastMess({ type: 'error', text1: 'Không thể lưu công việc. Vui lòng thử lại.' });
+        }
+        fetchJob()
+    }
 
     const renderItem = ({ item }) => {
         return (
-            <TouchableWithoutFeedback key={item.id} onPress={() => { navigation.navigate('JobDetail', { jobId: item.job.id }) }}>
+            <TouchableWithoutFeedback key={item.id} onPress={() => { navigation.navigate('JobDetail', { jobId: item.id }) }}>
                 <View style={styles.jobItemContainer}>
-                    <TouchableOpacity style={styles.btnSave} onPress={() => handleUnsaveJob(item.job.id)}>
-                        <Icon name="bookmark" size={26} color={orange} />
-                    </TouchableOpacity>
+                    {item.is_saved ?
+                        <View style={styles.btnSave}>
+                            <Icon name="bookmark" size={26} color={orange} />
+                        </View> :
+                        <TouchableOpacity style={styles.btnSave} onPress={() => handleSaveJob(item.id)}>
+                            <Icon name="bookmark-outline" size={26} />
+                        </TouchableOpacity>
+                    }
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <View style={styles.containerAvatarJob}>
-                            <Avatar.Image source={{ uri: item.job.employer.avatar }} size={36} style={{ backgroundColor: 'white' }} />
+                            <Avatar.Image source={{ uri: item.employer.avatar }} size={36} style={{ backgroundColor: 'white' }} />
                         </View>
                         <View>
-                            <Text style={styleShare.titleJobAndName}>{item.job.title}</Text>
-                            <Text style={{ marginTop: 5 }}>{item.job.employer.employer.company_name}</Text>
+                            <Text style={styleShare.titleJobAndName}>{item.title}</Text>
+                            <Text style={{ marginTop: 5 }}>{item.employer.employer.company_name}</Text>
                         </View>
                     </View>
                     <View style={styleShare.technologyContainer}>
-                        <Chip style={styleShare.chip}>{item.job.location}</Chip>
-                        <Chip style={styleShare.chip}>{`${item.job.salary} VND`}</Chip>
-                        <Chip style={styleShare.chip}>{item.job.experience}</Chip>
-                        {item.job.technologies.map((tech, index) => (
+                        <Chip style={styleShare.chip}>{item.location}</Chip>
+                        <Chip style={styleShare.chip}>{`${item.salary} VND`}</Chip>
+                        <Chip style={styleShare.chip}>{item.experience}</Chip>
+                        {item.technologies.map((tech, index) => (
                             <Chip key={index} style={styleShare.chip}>
                                 {tech.name}
                             </Chip>
@@ -82,14 +77,11 @@ export default function SaveJob({ navigation }) {
                     <View style={styleShare.flexBetween}>
                         <View style={styleShare.flexCenter}>
                             <Icon name="time" size={22} color={'grey'} style={{ marginRight: 5 }} />
-
-                            {/* <Text>Đã thêm: {moment(item.created_at).fromNow()}</Text> */}
-                            <Text>{moment(item.job.expiration_date).format('DD/MM/YYYY')}</Text>
+                            <Text>{moment(item.expiration_date).format('DD/MM/YYYY')}</Text>
                         </View>
                     </View>
                 </View>
             </TouchableWithoutFeedback>
-
         )
     };
 
@@ -101,20 +93,26 @@ export default function SaveJob({ navigation }) {
         <View style={styleShare.container}>
             <UIHeader leftIcon={"arrow-back"}
                 rightIcon={"ellipsis-horizontal"}
-                title={'Việc làm đã lưu'}
+                title={title}
                 handleLeftIcon={() => { navigation.goBack() }} />
             <FlatList
-                data={state.jobs}
+                data={jobs}
                 renderItem={renderItem}
-                keyExtractor={item => item.job.id.toString()}
+                keyExtractor={item => item.id.toString()}
                 ListEmptyComponent={
                     <View style={{ marginTop: 50, alignItems: 'center' }}>
                         <Image source={require("../../assets/images/save.png")} style={styleShare.imageNullData} />
-                        <Text style={styleShare.textMainOption}>Bạn chưa có bài tuyển dụng nào</Text>
-                        <Text style={{ padding: 20, textAlign: 'center' }}>Bạn không có bất kỳ bài tuyển dụng nào, hãy đăng bài tuyển dụng để tìm kiếm ứng viên tiềm năng</Text>
+                        <Text style={styleShare.textMainOption}>Không có việc làm nào </Text>
+                        <Text style={{ padding: 20, textAlign: 'center' }}>Không có việc làm nào phù hợp, vui lòng quay lại kiểm ra sau này</Text>
                     </View>
                 }
                 contentContainerStyle={{ paddingBottom: 40, paddingTop: 10 }}
+                ListFooterComponent={
+                    <View style={{ alignItems: 'center', marginVertical: 20 }}>
+                        <TouchableOpacity onPress={() => { /* Xử lý khi nhấn vào "Xem thêm" */ }}>
+                            <Text style={{ color: bgButton1, fontSize: 16, fontWeight: '500' }}>Xem thêm</Text>
+                        </TouchableOpacity>
+                    </View>}
             />
 
         </View>
@@ -131,6 +129,11 @@ const styles = StyleSheet.create({
         marginHorizontal: 20
     },
 
+    technologyContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        marginTop: 10
+    },
     containerAvatarJob: {
         width: 50,
         height: 50,
@@ -139,10 +142,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 15
-    },
-    avatarJob: {
-        width: 30,
-        height: 30
     },
     btnSave: {
         position: 'absolute',

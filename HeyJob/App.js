@@ -33,6 +33,15 @@ import ListJobEmployer from './src/screens/Job/ListJobEmployer';
 import CVApply from './src/screens/Employers/CVApply';
 import JobReducer from './src/reducer/JobReducer';
 import ApplyJob from './src/screens/Job/ApplyJob';
+import ApplySuccess from './src/screens/Job/ApplySuccess';
+import ViewCV from './src/screens/Job/ViewCV';
+import CVApplyNew from './src/screens/Employers/CVApplyNew';
+import ViewAll from './src/screens/Home/ViewAll';
+import ChatDetail from './src/screens/Chat/ChatDetail.jsx';
+import ListFollow from './src/screens/Auth/ListFollow.jsx';
+import NotificationEmployer from './src/screens/Notification/NotificationEmployer.jsx';
+import SearchJobMap from './src/screens/Job/SearchJobMap.jsx';
+
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -56,14 +65,23 @@ export default function App() {
           <Stack.Screen name="JobSearch" component={JobSearch} />
           <Stack.Screen name="JobSearchDetail" component={JobSearchDetail} />
           <Stack.Screen name="ChooseRole" component={ChooseRole} />
-          <Stack.Screen name="HomeEmployers" component={HomeEmployers} />
           <Stack.Screen name="AddPost" component={AddPost} />
           <Stack.Screen name="Statistical" component={Statistical} />
           <Stack.Screen name="UpdateEmployer" component={UpdateEmployer} />
           <Stack.Screen name="ListJobEmployer" component={ListJobEmployer} />
           <Stack.Screen name="CVApply" component={CVApply} />
+          <Stack.Screen name="CVApplyNew" component={CVApplyNew} />
           <Stack.Screen name="ApplyJob" component={ApplyJob} />
+          <Stack.Screen name="ApplySuccess" component={ApplySuccess} />
+          <Stack.Screen name="ViewCV" component={ViewCV} />
+          <Stack.Screen name="ProfileEmployer" component={ProfileEmployer} />
+          <Stack.Screen name="ViewAll" component={ViewAll} />
+          <Stack.Screen name="EmployerTab" component={EmployerTab} />
+          <Stack.Screen name="ChatDetail" component={ChatDetail} />
+          <Stack.Screen name="ListFollow" component={ListFollow} />
+          <Stack.Screen name="SearchJobMap" component={SearchJobMap} />
 
+          {/* <Stack.Screen name="NotificationEmployer" component={NotificationEmployer} /> */}
 
 
 
@@ -74,7 +92,11 @@ export default function App() {
       </NavigationContainer>
     </MyContext.Provider>
 
-    // <UpdateEmployer></UpdateEmployer>
+    // <Notification/>
+    // <UploadCV />
+    // <UpdateEmployer/>
+    // <Chat></Chat>
+    // <SearchJobMap></SearchJobMap>
   );
 }
 
@@ -89,9 +111,6 @@ function MainTab() {
             let iconName;
             if (route.name === 'Home') {
               iconName = focused ? 'home' : 'home-outline';
-            }
-            else if (route.name === 'Chat') {
-              iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
             }
             else if (route.name === 'Notification') {
               iconName = focused ? 'notifications' : 'notifications-outline';
@@ -110,7 +129,6 @@ function MainTab() {
         })}
       >
         <Tab.Screen name="Home" component={Home} />
-        <Tab.Screen name="Chat" component={Chat} />
         <Tab.Screen name="Notification" component={Notification} />
         <Tab.Screen name="Profile" component={Profile} />
       </Tab.Navigator>
@@ -119,7 +137,7 @@ function MainTab() {
   );
 }
 
-function MainEmployers() {
+function EmployerTab() {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -129,13 +147,10 @@ function MainEmployers() {
           tabBarIcon: ({ focused, color, size }) => {
             let iconName;
             if (route.name === 'HomeEmployers') {
-              iconName = focused ? 'layers' : 'layers-outline';
+              iconName = focused ? 'home' : 'home-outline';
             }
-            else if (route.name === 'Statistical') {
-              iconName = focused ? 'stats-chart' : 'stats-chart-outline';
-            }
-            else if (route.name === 'AddPost') {
-              iconName = focused ? 'bar-chart' : 'bar-chart-outline';
+            else if (route.name === 'NotificationEmployer') {
+              iconName = focused ? 'notifications' : 'notifications-outline';
             }
 
             return <Icon name={iconName} size={28} color={color} />;
@@ -148,14 +163,13 @@ function MainEmployers() {
         })}
       >
         <Tab.Screen name="HomeEmployers" component={HomeEmployers} />
-        <Tab.Screen name="AddPost" component={AddPost} />
-        <Tab.Screen name="Statistical" component={Statistical} />
-
+        <Tab.Screen name="NotificationEmployer" component={NotificationEmployer} />
       </Tab.Navigator>
     </KeyboardAvoidingView>
 
   );
 }
+
 
 
 function AuthStack() {

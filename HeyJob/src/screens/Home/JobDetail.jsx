@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, Image, Text, TouchableOpacity, ScrollView, TouchableWithoutFeedback, ActivityIndicator } from "react-native";
+import { StyleSheet, View, Image, Text, TouchableOpacity, ScrollView, TouchableWithoutFeedback, ActivityIndicator, Linking } from "react-native";
 import styleShare from "../../assets/theme/style";
 import UIHeader from "../../components/UIHeader";
 import { bgButton1, bgButton2, bgImage, grey, orange, textColor, white } from "../../assets/theme/color";
@@ -7,6 +7,8 @@ import Icon from "react-native-vector-icons/Ionicons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { authApi, endpoints } from "../../config/API";
 import moment from "moment";
+import { ToastMess } from "../../components/ToastMess";
+import { Avatar } from "react-native-paper";
 
 export default function JobDetail({ navigation, route }) {
     const { jobId } = route.params
@@ -21,7 +23,7 @@ export default function JobDetail({ navigation, route }) {
 
     const menuItems = [
         { id: 1, icon: 'sparkles', title: 'Kinh nghiệm', info: jobDetail.experience },
-        { id: 3, icon: 'people', title: 'Số lượng tuyển', info: '10' },
+        { id: 3, icon: 'people', title: 'Số lượng tuyển', info: jobDetail.quantity },
         { id: 6, icon: 'stopwatch', title: 'Hạn nộp hồ sơ', info: moment(jobDetail.expiration_date).format('DD/MM/YYYY') },
     ];
 
@@ -29,9 +31,40 @@ export default function JobDetail({ navigation, route }) {
         const token = await AsyncStorage.getItem("access-token");
         const res = await authApi(token).get(endpoints['jobs_detail'](jobId));
         setJobDetail(res.data)
-        // console.log(jobDetail)
         console.log(res.data)
         setLoading(false)
+    }
+
+    const handleLocationPress = () => {
+        const address = encodeURIComponent(jobDetail.location_detail);
+        const url = `https://www.google.com/maps/search/?api=1&query=${address}`; // Google Maps
+
+        // Nếu muốn mở Apple Maps trên iOS, dùng URL sau:
+        // const url = `http://maps.apple.com/?q=${address}`;
+
+        Linking.canOpenURL(url)
+            .then((supported) => {
+                if (supported) {
+                    return Linking.openURL(url);
+                } else {
+                    console.log("Don't know how to open URI: " + url);
+                }
+            })
+            .catch((err) => console.error('An error occurred', err));
+    };
+
+    const handleSaveJob = async (jobId) => {
+        try {
+            const token = await AsyncStorage.getItem("access-token");
+            await authApi(token).post(endpoints['save_job'], { job_id: jobId });
+            ToastMess({ type: 'success', text1: 'Lưu việc làm thành công.' });
+            fetchJobDetail()
+
+
+        } catch (error) {
+            console.error("Lỗi khi lưu công việc:", error);
+            ToastMess({ type: 'error', text1: 'Không thể lưu công việc. Vui lòng thử lại.' });
+        }
     }
 
     if (loading) {
@@ -45,8 +78,8 @@ export default function JobDetail({ navigation, route }) {
                     rightIcon={"ellipsis-horizontal"}
                     handleLeftIcon={() => { navigation.goBack() }} />
                 <View style={styles.containerTop}>
-                    <TouchableOpacity style={styleShare.containerAvatar}>
-                        <Image source={require('../../assets/images/google.png')} style={styleShare.avatarJob} />
+                    <TouchableOpacity style={styleShare.containerAvatar} onPress={() => navigation.navigate('ProfileEmployer', { employerId: jobDetail.employer.id })}>
+                        <Avatar.Image source={{ uri: jobDetail.employer.avatar }} size={60} style={{ backgroundColor: 'white' }} />
                     </TouchableOpacity>
                     <Text style={styleShare.titleJobAndName}>{jobDetail.title}</Text>
                     <Text >{jobDetail.employer.employer.company_name}</Text>
@@ -60,11 +93,6 @@ export default function JobDetail({ navigation, route }) {
                             <Icon name="location-sharp" size={30} color={bgButton1} />
                             <Text style={styles.textDesc}>Địa điểm</Text>
                             <Text style={styleShare.titleJobAndName}>{jobDetail.location}</Text>
-                        </View>
-                        <View style={styles.descDetail}>
-                            <Icon name="sparkles" size={30} color={bgButton1} />
-                            <Text style={styles.textDesc}>Kinh nghiệm</Text>
-                            <Text style={styleShare.titleJobAndName}>{jobDetail.experience}</Text>
                         </View>
                     </View>
                 </View>
@@ -100,17 +128,35 @@ export default function JobDetail({ navigation, route }) {
                     </View>
                     <View style={{ marginBottom: 20 }}>
                         <Text style={styleShare.textMainOption}>Địa chỉ làm việc</Text>
-                        <Text style={{ color: textColor, marginTop: 5 }}>{jobDetail.location}</Text>
+                        <Text style={{ color: textColor, marginTop: 5 }}>{jobDetail.location_detail}</Text>
+                    </View>
+                    <View style={{ marginBottom: 20 }}>
+                        <TouchableOpacity style={styleShare.buttonDetailApply} onPress={() => handleLocationPress()}>
+                            <Text style={{ color: textColor, marginTop: 5 }}><Text style={{ fontWeight: '500', color: bgButton1 }}>Xem địa chỉ trên Map</Text></Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
             </ScrollView>
             <View style={[styleShare.bottomBar, styleShare.flexCenter]}>
-                <View style={styleShare.buttonSave}>
-                    <Icon name="bookmarks-outline" color={orange} size={24} />
-                </View>
-                <TouchableOpacity style={styles.buttonApply} onPress={() => { navigation.navigate('UploadCV', { jobId: jobDetail.id }) }}>
-                    <Text style={styles.buttonText}>Ứng tuyển ngay</Text>
-                </TouchableOpacity>
+                {jobDetail.is_saved ? (
+                    <View style={styleShare.buttonSave}>
+                        <Icon name="bookmarks" color={orange} size={24} />
+                    </View>
+                ) : (
+                    <TouchableOpacity style={styleShare.buttonSave} onPress={() => handleSaveJob(jobDetail.id)}>
+                        <Icon name="bookmarks-outline" color={orange} size={24} />
+                    </TouchableOpacity>
+                )}
+                {jobDetail.is_applied = true ? (
+                    <TouchableOpacity style={styles.buttonApply} onPress={() => { navigation.navigate('UploadCV', { jobId: jobDetail.id }) }}>
+                        <Text style={styles.buttonText}>Ứng tuyển ngay</Text>
+                    </TouchableOpacity>
+                ) : (
+                    <TouchableOpacity style={styles.buttonApply} onPress={() => navigation.navigate('ProfileEmployer', { employerId: jobDetail.employer.id })}>
+                        <Text style={styles.buttonText}>Hồ sơ công ty</Text>
+                    </TouchableOpacity>
+                )}
+
             </View>
         </View>
     )
@@ -124,11 +170,13 @@ const styles = StyleSheet.create({
         marginHorizontal: 20,
         marginTop: 30,
         paddingTop: 45,
-        paddingHorizontal: 20
+        paddingHorizontal: 20,
+        flexShrink:1
     }
     , descOption: {
         flexDirection: 'row',
         justifyContent: 'space-between',
+
     },
     descDetail: {
         alignItems: 'center',

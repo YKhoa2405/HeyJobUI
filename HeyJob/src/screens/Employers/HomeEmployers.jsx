@@ -1,30 +1,35 @@
 import React, { useContext } from "react";
-import { View, Text, TouchableWithoutFeedback, StyleSheet, Dimensions, TouchableOpacity } from "react-native";
+import { View, Text, TouchableWithoutFeedback, StyleSheet, Dimensions, TouchableOpacity, ScrollView } from "react-native";
 import styleShare from "../../assets/theme/style";
 import { Avatar, Chip } from "react-native-paper";
-import { orange, bgButton1, grey, white } from "../../assets/theme/color";
+import { orange, bgButton1, grey, white, textColor } from "../../assets/theme/color";
 import Icon from "react-native-vector-icons/Ionicons"
 import MyContext from "../../config/MyContext";
 
 export default function HomeEmployers({ navigation }) {
     const [user, dispatch] = useContext(MyContext)
+    console.log(user)
     const isEmployerComplete = user.employer.company_name !== null &&
         user.employer.company_name !== ""
 
-
+    console.log(user)
 
     const manageEmployers = [
-        { id: 1, icon: 'megaphone-outline', title: 'Chiến dịch tuyển dụng', info: 0 },
-        { id: 2, icon: 'reader-outline', title: 'CV tiếp nhận', info: 0 },
+        { id: 1, icon: 'megaphone-outline', title: 'Chiến dịch tuyển dụng', info: user.employer.job_count },
+        { id: 2, icon: 'reader-outline', title: 'CV tiếp nhận', info: user.employer.accepted_cv_count },
         { id: 4, icon: 'podium-outline', title: 'Thống kê tuyển dụng' },
-        { id: 3, icon: 'exit-outline', title: 'CV ứng tuyển mới', info: 0 },
+        { id: 3, icon: 'exit-outline', title: 'CV ứng tuyển mới', info: user.employer.pending_cv_count },
     ]
     const UtilitiesGrid = () => (
         <View style={styles.gridUtili}>
-            <TouchableOpacity style={styles.gridItemUtili} onPress={()=>navigation.navigate('AddPost')}>
+            <TouchableOpacity style={styles.gridItemUtili} onPress={() => navigation.navigate('AddPost')}>
                 <Icon name={'add-circle-outline'} size={20} color={bgButton1}></Icon>
                 <Text style={styleShare.lineText}>Đăng bài</Text>
             </TouchableOpacity>
+            {/* <TouchableOpacity style={styles.gridItemUtili} onPress={() => navigation.navigate('UpdateEmployer')}>
+                <Icon name={'person-circle-outline'} size={20} color={bgButton1}></Icon>
+                <Text style={styleShare.lineText}>Chỉnh sửa hồ sơ</Text>
+            </TouchableOpacity> */}
         </View>
     );
 
@@ -47,6 +52,13 @@ export default function HomeEmployers({ navigation }) {
         </View>
     );
 
+    const handleLogout = async () => {
+        navigation.navigate('Login')
+        dispatch({
+            'type': 'logout'
+        })
+    }
+
     const handleManageEmployersClick = (id) => {
         switch (id) {
             case 1:
@@ -58,8 +70,7 @@ export default function HomeEmployers({ navigation }) {
                 // Navigate to the applied jobs screen or perform other actions
                 break;
             case 3:
-                console.log('Công ty đã theo dõi clicked');
-                // Navigate to the followed companies screen or perform other actions
+                navigation.navigate('CVApplyNew')
                 break;
             case 4:
                 navigation.navigate('Statistical')
@@ -70,13 +81,17 @@ export default function HomeEmployers({ navigation }) {
     };
 
     return (
-        <View style={styleShare.container}>
+        <ScrollView style={styleShare.container} showsVerticalScrollIndicator={false}>
             <View style={styles.containerTop}>
                 <View>
-                    <Text style={styleShare.textMainOption}>Xin chào</Text>
-                    <Chip style={{ marginTop: 5, backgroundColor: orange, }}>Nhà tuyển dụng</Chip>
+                    <Text style={styleShare.textMainOption}>Xin chào, {user.username}</Text>
+                    {user.employer.approval_status === true ? (
+                        <Chip style={{ marginTop: 5, backgroundColor: 'green', width: 130 }}><Text style={{ color: 'white' }}>Đã xác nhận</Text></Chip>
+                    ) : (
+                        <Chip style={{ marginTop: 5, backgroundColor: 'red', width:130 }}><Text style={{ color: 'white' }}>Chưa xác nhận</Text></Chip>
+                    )}
                 </View>
-                <Avatar.Image source={require('../../assets/images/google.png')} size={50} />
+                <Avatar.Image source={{ uri: user.avatar }} size={50} style={{backgroundColor:'white'}} />
             </View>
             {user.employer.approval_status === true ? (
                 <View style={styles.containerMain}>
@@ -84,7 +99,38 @@ export default function HomeEmployers({ navigation }) {
                     <UtilitiesGrid />
                     <Text style={[styleShare.titleJobAndName, { marginVertical: 10, marginTop: 10 }]}>Quản lý chiến dịch tuyển dụng</Text>
                     <ManageEmployersGrid />
+                    <Text style={[styleShare.titleJobAndName, { marginTop: 10 }]}>Thông tin công ty</Text>
+                    <View style={styles.containerInfoCompany}>
+                        <View>
+                            <Text style={styleShare.titleJobAndName}>{user.employer.company_name}</Text>
+                            <View style={[styleShare.flexBetween, { marginTop: 10 }]}>
+                                <View style={[styleShare.flexCenter, { flex: 1 }]}>
+                                    <Icon name="people-outline" size={18} />
+                                    <Text style={{ marginLeft: 5, fontSize: 12, fontWeight: '500' }}>{user.employer.followers_count} người theo dõi</Text>
+                                </View>
+                                <View style={[styleShare.flexCenter, { flex: 1 }]}>
+                                    <Icon name="business-outline" size={18} />
+                                    <Text style={{ marginLeft: 5, fontSize: 12, fontWeight: '500' }}>{user.employer.size} nhân viên</Text>
+                                </View>
+                            </View>
+                        </View>
+                        <View>
+                            <Text style={[styleShare.titleJobAndName, { marginTop: 10 }]}>Giới thiệu công ty</Text>
+                            <Text style={{ color: textColor, marginTop: 5 }}>{user.employer.description}</Text>
+                            <Text style={[styleShare.titleJobAndName, { marginTop: 10 }]}>Website</Text>
+                            <TouchableOpacity onPress={() => handleOpenWebsite(user.employer.website)}>
+                                <Text style={{ color: orange, marginTop: 5 }}>{user.employer.website}</Text>
+                            </TouchableOpacity>
+                            <Text style={[styleShare.titleJobAndName, { marginTop: 10 }]}>Email</Text>
+                            <TouchableOpacity onPress={() => handleOpenEmail(user.email)}>
+                                <Text style={{ color: orange, marginTop: 5 }}>{user.email}</Text>
+                            </TouchableOpacity>
+                            <Text style={[styleShare.titleJobAndName, { marginTop: 10 }]}>Địa chỉ công ty</Text>
+                            <Text style={{ color: textColor, marginTop: 5 }}>{user.employer.address}</Text>
+                        </View>
+                    </View>
                 </View>
+
             ) : (
                 <View style={styles.containerMain}>
                     <TouchableOpacity
@@ -114,7 +160,15 @@ export default function HomeEmployers({ navigation }) {
                     </View>
                 </View>
             )}
-        </View>
+            <View style={{ margin: 20 }}>
+                <TouchableOpacity onPress={() => handleLogout()}>
+                    <View style={styles.btnLogout}>
+                        <Text style={{ fontWeight: '500', fontSize: 16, marginRight: 10, color: 'red' }}>Đăng xuất</Text>
+                        <Icon name="exit" size={24} color={'red'} />
+                    </View>
+                </TouchableOpacity>
+            </View>
+        </ScrollView>
     )
 }
 
@@ -160,5 +214,19 @@ const styles = StyleSheet.create({
         padding: 20,
         borderRadius: 20,
         marginTop: 20
+    },
+    btnLogout: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: white,
+        padding: 10,
+        borderRadius: 10,
+    },
+    containerInfoCompany: {
+        padding: 20,
+        backgroundColor: 'white',
+        marginVertical: 10,
+        borderRadius: 10
     }
 })

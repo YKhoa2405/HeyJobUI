@@ -9,11 +9,10 @@ import MyContext from "../../config/MyContext";
 import { storeDb } from "../../config/Firebase";
 import { collection, doc, getDoc, getDocs, orderBy, query, where, querySnapshot, updateDoc, deleteDoc } from "firebase/firestore";
 import { ToastMess } from "../../components/ToastMess";
-export default function Notification({ navigation }) {
+export default function NotificationEmployer({ navigation }) {
     const [user, dispatch] = useContext(MyContext)
     const [loading, setLoading] = useState(true);
     const [notifi, setNotifi] = useState([]);
-    console.log(user)
 
     useEffect(() => {
         fetchNotifications();
@@ -133,15 +132,15 @@ export default function Notification({ navigation }) {
     }
 
     const renderItem = ({ item }) => (
-        <TouchableWithoutFeedback onPress={() => handleSeenNotifi(item.jobId)}>
+        <TouchableWithoutFeedback>
             <View>
                 <View style={[styles.notification, item.viewed && styles.viewedNotification]}>
                     <View style={{ marginEnd: 15 }}>
-                        <Avatar.Image source={require("../../assets/images/google.png")} size={40} />
+                        <Avatar.Image source={{uri:item.avatar}} size={40} />
                     </View>
                     <View style={{ flex: 1 }}>
-                        <Text style={styleShare.titleJobAndName} ellipsizeMode="tail" numberOfLines={2}>{item.title}</Text>
-                        <Text style={{ marginTop: 5 }} ellipsizeMode="tail" numberOfLines={2}>{item.message}</Text>
+                        <Text style={styleShare.titleJobAndName} ellipsizeMode="tail" numberOfLines={2}>{item.message}</Text>
+                        <Text style={{ marginTop: 5 }} ellipsizeMode="tail" numberOfLines={2}>{item.title}</Text>
                         <View style={[styleShare.flexBetween, { marginTop: 10, flex: 1 }]}>
                             <Text style={{ color: 'grey' }}>{formatRelativeTime(item.time)}</Text>
                             <TouchableOpacity onPress={() => handleDeleteNotifi(item.jobId)}>

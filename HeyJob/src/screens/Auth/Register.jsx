@@ -7,6 +7,8 @@ import ButtonMain from "../../components/ButtonMain";
 import { auth } from "../../config/Firebase";
 import { ToastMess } from "../../components/ToastMess";
 import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
+import * as ImagePicker from 'expo-image-picker';
+
 
 
 export default function Register({ navigation }) {
@@ -14,6 +16,21 @@ export default function Register({ navigation }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [passwordAg, setPasswordAg] = useState('');
+    const [avatar, setAvatar] = useState(null)
+
+
+    async function chooseImage() {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+        })
+
+        if (!result.canceled) {
+            setAvatar(result.assets[0].uri)
+        }
+    }
 
     const translateFirebaseError = (errorCode) => {
         switch (errorCode) {
@@ -31,7 +48,7 @@ export default function Register({ navigation }) {
     };
 
     const handleSignUp = async () => {
-        if (!email || !password || !userName || !passwordAg) {
+        if (!email || !password || !userName || !passwordAg || !avatar) {
             ToastMess({ type: 'error', text1: 'Vui lòng không để trống các trường.' });
             return;
         }
@@ -51,12 +68,14 @@ export default function Register({ navigation }) {
         // } catch (e) {
         //     const errorMessage = translateFirebaseError(e.code);
         //     ToastMess({ type: 'error', text1: errorMessage });
-        // }
+        // } 
+
 
         navigation.navigate('ChooseRole', {
             email,
             password,
-            userName
+            userName,
+            avatar
         });
     };
 
@@ -79,8 +98,18 @@ export default function Register({ navigation }) {
                     placeholder="Email"
                     onChangeText={setEmail}
                     autoCapitalize="none"
-
                 />
+                <Text style={styles.textInput}>Ảnh đại diện</Text>
+                {avatar ? (
+                    <TouchableOpacity onPress={chooseImage}>
+                        <Image source={{ uri: avatar }} style={styles.imageUpload} />
+                    </TouchableOpacity>
+                ) : (
+                    <TouchableOpacity onPress={chooseImage} style={{ width: '100%', height: 50, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center', marginTop: 10, borderRadius: 20 }}>
+                        <Text style={{ fontSize: 16 }}>Tải ảnh của bạn</Text>
+                    </TouchableOpacity>
+                )}
+
                 <Text style={styles.textInput}>Mật khẩu</Text>
                 <InputMain
                     placeholder="Mật khẩu"
@@ -129,5 +158,13 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: bgButton1,
         marginTop: 15
+    },
+    imageUpload: {
+        marginTop: 10,
+        width: 60,
+        height: 60,
+        resizeMode: 'cover',
+        borderRadius: 100,
+        borderWidth: 1
     },
 })

@@ -1,39 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { View, ScrollView, Text, StyleSheet, TouchableWithoutFeedback, Image, ActivityIndicator, FlatList, TouchableOpacity, Linking } from "react-native";
+import { View, ScrollView, Text, StyleSheet, TouchableWithoutFeedback, Image, ActivityIndicator, FlatList, TouchableOpacity, Linking, Alert } from "react-native";
 import styleShare from "../../assets/theme/style";
 import UIHeader from "../../components/UIHeader";
 import Icon from "react-native-vector-icons/Ionicons"
 import moment from "moment";
 import 'moment/locale/vi';
-import { Chip } from "react-native-paper";
 import { bgButton1, bgButton2, grey, orange, white } from "../../assets/theme/color";
 import { authApi, endpoints } from "../../config/API";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import ReusableModal from "../../components/ReusableModal ";
 
 export default function CVApply({ navigation }) {
-    const [modalVisible, setModalVisible] = useState({
-        statusCV: false,
-    });
-    const statusOption = ['Chấp nhận', 'Từ chối'];
-
-    const mockData = [
-        {
-            id: 1,
-            job_title: "UX/UI 1223",
-            seeker_info: {
-                id: 3,
-                email: "Ungvien@gmail.com",
-                username: "UngVien"
-            },
-            status: "PENDING",
-            created_at: "2024-08-15T09:22:36.088055Z",
-            cover_letter: "hahahahah",
-            cv: "image/upload/v1723713759/kte8cuojphdvrqio92zz.pdf"
-        }
-    ];
     const [cv, setCv] = useState([]);
-    const [selectStatus, setSelectStatus] = useState('')
     const [loading, setLoading] = useState(true);
     moment.locale('vi');
 
@@ -41,12 +18,13 @@ export default function CVApply({ navigation }) {
         Linking.openURL(`mailto:${email}`).catch(err => console.error("Failed to open email:", err));
     };
 
-    const handleStatusCVSelect = (statusCV) => {
-        setSelectStatus(statusCV)
-        setModalVisible({ ...modalVisible, statusCV: false });
-        console.log(selectStatus)
-    };
+    const handleOpenCv = (url) => {
+        Linking.openURL(url).catch(err => console.error("Failed to open URL:", err));
+    }
 
+    useEffect(() => {
+        fetchApplicationCV()
+    }, []);
     const fetchApplicationCV = async () => {
         try {
             const token = await AsyncStorage.getItem("access-token");
@@ -58,64 +36,47 @@ export default function CVApply({ navigation }) {
         } finally {
             setLoading(false);
         }
-
     };
 
-    useEffect(() => {
-        fetchApplicationCV()
-    }, []);
+
+
+
 
     const renderItem = ({ item }) => {
-        const getStatusInfo = (status) => {
-            switch (status) {
-                case 'PENDING':
-                    return { text: 'Chờ xử lý', style: { color: bgButton1 } }; // Màu cho trạng thái chờ xử lý
-                case 'CLOSED':
-                    return { text: 'Đã từ chối', style: { color: 'red' } }; // Màu cho trạng thái đã từ chối
-                case 'OPEN':
-                    return { text: 'Đã đồng ý', style: { color: 'green' } }; // Màu cho trạng thái đã đồng ý
-                default:
-                    return { text: 'Trạng thái không xác định', style: { color: 'gray' } }; // Màu cho trạng thái không xác định
-            }
-        };
-        const statusInfo = getStatusInfo(item.status);
         return (
             <TouchableWithoutFeedback>
                 <View style={styles.jobItemContainer}>
                     <View style={styleShare.flexBetween}>
-                        <Text style={styleShare.titleJobAndName}>{item.job_title}</Text>
-                        <TouchableOpacity onPress={() => setModalVisible({ ...modalVisible, statusCV: true })}>
-                            <Icon name="layers" size={24} color={orange}></Icon>
-                        </TouchableOpacity>
+                        <Text style={styleShare.titleJobAndName}>{item.job.title}</Text>
+                        <View style={styleShare.flexCenter}>
+                            {/* <TouchableOpacity onPress={() => handleUpdateStatus(item.id, 'OPEN')}>
+                                <Icon name="checkmark-circle-sharp" size={24} color={'green'}></Icon>
+                            </TouchableOpacity> */}
+                        </View>
                     </View>
-                    <View style={{ marginBottom: 15, marginTop: 5 }}>
-                        <Text style={styleShare.titleJobAndName}>Thông tin ứng viên:</Text>
+                    <View style={{ marginTop: 5 }}>
                         <TouchableOpacity onPress={() => handleOpenEmail(item.seeker_info.email)}>
-                            <Text style={styles.seekerInfo}>Ứng viên: {item.seeker_info.username} ({item.seeker_info.email})</Text>
+                            <Text>Email: {item.email}</Text>
+
                         </TouchableOpacity>
-                        <Chip style={{
-                            alignSelf: 'flex-start',
-                            backgroundColor: grey,
-                            marginTop: 5
-                        }}>
-                            Hồ sơ ứng viên
-                        </Chip>
-                    </View>
-                    <View style={{ marginBottom: 10 }}>
-                        <Text style={styleShare.titleJobAndName}>Thư giới thiệu:</Text>
-                        <Text>{item.cover_letter}</Text>
-                    </View>
-                    <View style={{ marginBottom: 10 }}>
-                        <Text style={styleShare.titleJobAndName}>CV:</Text>
-                        <Text>{item.cover_letter}</Text>
+                        <Text>Họ và  tên: {item.name}</Text>
+                        <Text>Số điện thoại: {item.phone}</Text>
                     </View>
                     <View style={styleShare.flexBetween}>
-                        <Text>Ứng tuyển lúc: {moment(item.created_at).format('DD/MM/YYYY')}</Text>
-
-                        <Text style={[styleShare.titleJobAndName, statusInfo.style]}>
-                            {statusInfo.text}
+                        <View style={styleShare.flexCenter}>
+                            <Icon name="time" size={22} color={'grey'} style={{ marginRight: 5 }} />
+                            <Text>{moment(item.created_at).format('DD/MM/YYYY')}</Text>
+                        </View>
+                        <Text style={[styleShare.titleJobAndName, { color: 'green' }]}>
+                            Đã đồng ý
                         </Text>
                     </View>
+                    <TouchableOpacity onPress={() => handleOpenCv(item.cv)}>
+                        <View style={[styleShare.buttonDetailApply, { marginTop: 10 }]}>
+                            <Icon name="document-outline" size={22} />
+                            <Text style={{ marginLeft: 5 }}>Xem CV ứng viên</Text>
+                        </View>
+                    </TouchableOpacity>
                 </View>
 
             </TouchableWithoutFeedback>
@@ -145,17 +106,8 @@ export default function CVApply({ navigation }) {
                 }
                 contentContainerStyle={{ paddingBottom: 40, paddingTop: 10 }}
             />
-            <ReusableModal
-                visible={modalVisible.statusCV}
-                onClose={() => setModalVisible({ ...modalVisible, statusCV: false })}
-                title="Chọn mức lương"
-                data={statusOption}
-                selectedItems={selectStatus ? [selectStatus] : []}
-                onItemPress={handleStatusCVSelect}
-                onComplete={() => setModalVisible({ ...modalVisible, statusCV: false })}
-                singleSelect={true}
-            />
-            
+
+
 
         </View>
     )

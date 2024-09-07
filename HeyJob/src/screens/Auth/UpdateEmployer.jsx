@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { View, Text, TextInput, StyleSheet, ActivityIndicator, ScrollView } from "react-native";
 import styleShare from "../../assets/theme/style";
 import UIHeader from "../../components/UIHeader";
@@ -8,14 +8,26 @@ import ButtonMain from "../../components/ButtonMain";
 import { ToastMess } from "../../components/ToastMess";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { authApi, endpoints } from "../../config/API";
+import { Picker } from '@react-native-picker/picker';
+import axios from "axios";
+import MyContext from "../../config/MyContext";
 
 export default function UpdateEmployer({ navigation }) {
-    const [companyName, setCompanyName] = useState('')
-    const [website, setWebsite] = useState('')
-    const [size, setSize] = useState(null)
-    const [address, setAddress] = useState('')
-    const [description, setDescription] = useState('')
+    const [user, dispatch] = useContext(MyContext)
+    const [companyName, setCompanyName] = useState(user.employer.company_name)
+    const [website, setWebsite] = useState(user.employer.website)
+    const [size, setSize] = useState(user.employer.size)
+    const [address, setAddress] = useState(user.employer.address)
+    const [description, setDescription] = useState(user.employer.description)
     const [loading, setLoading] = useState(false);
+
+    const [provinces, setProvinces] = useState([]);
+    const [districts, setDistricts] = useState([]);
+    const [wards, setWards] = useState([]);
+    const [selectedProvinceId, setSelectedProvinceId] = useState('');
+    const [selectedDistrictId, setSelectedDistrictId] = useState('');
+    const [selectedWardId, setSelectedWardId] = useState('');
+    const [locationDetail, setLocationDetail] = useState('');
 
     const validateUrl = (url) => {
         const urlPattern = new RegExp(
@@ -25,8 +37,64 @@ export default function UpdateEmployer({ navigation }) {
             '(\\/[a-zA-Z0-9$-_@.&+!*"(),;=]*)*' + // path (optional)
             '(\\?[a-zA-Z0-9-_@.&+!*"(),;=]*)?' // query string (optional)
         );
-
         return urlPattern.test(url);
+    };
+
+    useEffect(() => {
+        fetchProvinces()
+    })
+
+    useEffect(() => {
+        updateLocationDetail();
+    }, [selectedProvinceId, selectedDistrictId, selectedWardId, address]);
+
+    const fetchProvinces = async () => {
+        try {
+            const res = await axios.get('https://esgoo.net/api-tinhthanh/1/0.htm');
+            setProvinces(res.data.data || []);
+        } catch (error) {
+            console.error('Error fetching provinces:', error);
+        }
+    };
+
+    const fetchDistricts = async (provinceId) => {
+        try {
+            const response = await axios.get(`https://esgoo.net/api-tinhthanh/2/${provinceId}.htm`);
+            if (response.data.error === 0) {
+                setDistricts(response.data.data || []);
+                setSelectedDistrictId(''); // Reset district and ward selections
+                setWards([]);
+            }
+        } catch (error) {
+            console.error('Error fetching districts:', error);
+        }
+    };
+
+    const fetchWards = async (districtId) => {
+        try {
+            const response = await axios.get(`https://esgoo.net/api-tinhthanh/3/${districtId}.htm`);
+            if (response.data.error === 0) {
+                setWards(response.data.data || []);
+            }
+        } catch (error) {
+            console.error('Error fetching wards:', error);
+        }
+    };
+
+    const updateLocationDetail = () => {
+        const province = provinces.find(p => p.id === selectedProvinceId)?.full_name || '';
+        const district = districts.find(d => d.id === selectedDistrictId)?.full_name || '';
+        const ward = wards.find(w => w.id === selectedWardId)?.full_name || '';
+        const detail = [
+            address,
+            ward,
+            district,
+            province
+        ]
+            .filter(Boolean)
+            .join(', ');
+        setLocationDetail(detail);
+        console.log(locationDetail)
     };
 
     const handleUpdateEmployer = async () => {
@@ -45,7 +113,7 @@ export default function UpdateEmployer({ navigation }) {
         form.append('company_name', companyName);
         form.append('website', website);
         form.append('size', size);
-        form.append('address', address);
+        form.append('address', locationDetail);
         form.append('description', description);
 
         console.log(form)
@@ -65,6 +133,8 @@ export default function UpdateEmployer({ navigation }) {
 
         } catch (error) {
             console.error('Error:', error.response ? error.response.data : error.message);
+        } finally {
+            setLoading(false)
         }
 
     }
@@ -103,9 +173,47 @@ export default function UpdateEmployer({ navigation }) {
                     />
 
                     <Text style={styles.textInput}>Địa chỉ công ty</Text>
+                    <Picker
+                        selectedValue={selectedProvinceId}
+                        onValueChange={(itemValue) => {
+                            setSelectedProvinceId(itemValue);
+                            fetchDistricts(itemValue);
+                        }}
+                        style={styles.inputSelect}
+                    >
+                        <Picker.Item label="Chọn tỉnh/thành" value="" />
+                        {provinces.map((province) => (
+                            <Picker.Item key={province.id} label={province.full_name} value={province.id} />
+                        ))}
+                    </Picker>
+                    <Picker
+                        selectedValue={selectedDistrictId}
+                        onValueChange={(itemValue) => {
+                            setSelectedDistrictId(itemValue);
+                            fetchWards(itemValue);
+                        }}
+                        style={styles.inputSelect}
+                        enabled={!!selectedProvinceId}
+                    >
+                        <Picker.Item label="Chọn quận/huyện" value="" />
+                        {districts.map((district) => (
+                            <Picker.Item key={district.id} label={district.full_name} value={district.id} />
+                        ))}
+                    </Picker>
+                    <Picker
+                        selectedValue={selectedWardId}
+                        onValueChange={setSelectedWardId}
+                        style={styles.inputSelect}
+                        enabled={!!selectedDistrictId}
+                    >
+                        <Picker.Item label="Chọn phường/xã" value="" />
+                        {wards.map((ward) => (
+                            <Picker.Item key={ward.id} label={ward.full_name} value={ward.id} />
+                        ))}
+                    </Picker>
                     <View>
                         <InputMain
-                            placeholder="Địa chỉ công ty"
+                            placeholder="Tên đường, số, địa chỉ cụ thể, ..."
                             onChangeText={setAddress}
                         />
                     </View>
@@ -145,5 +253,13 @@ const styles = StyleSheet.create({
         marginBottom: 30,
         padding: 10,
         backgroundColor: white
-    }
+    },
+    inputSelect: {
+        paddingVertical: 15,
+        paddingHorizontal: 10,
+        borderRadius: 10,
+        backgroundColor: white,
+        marginTop: 10,
+        opacity: 0.8,
+    },
 })
