@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         paddingHorizontal: 20,
-        backgroundColor:white
+        backgroundColor: white
     }
     , desc: {
         fontWeight: 'bold',

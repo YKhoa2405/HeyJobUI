@@ -106,6 +106,9 @@ export default function ApplyJob({ navigation }) {
                 rightIcon={"ellipsis-horizontal"}
                 title={'Việc làm đã ứng tuyển'}
                 handleLeftIcon={() => { navigation.goBack() }} />
+            <View style={{ marginHorizontal: 20, marginTop: 5 }}>
+                <Text style={styleShare.titleJobAndName}>Số lượng: {jobs.length}</Text>
+            </View>
             <FlatList
                 data={jobs}
                 renderItem={renderItem}
@@ -118,7 +121,7 @@ export default function ApplyJob({ navigation }) {
                         <Text style={{ padding: 20, textAlign: 'center' }}>Hãy tích cực ứng tuyển để có cơ hội tìm được việc làm tiềm năng</Text>
                     </View>
                 }
-                contentContainerStyle={{ paddingBottom: 40, paddingTop: 10 }}
+                contentContainerStyle={{ paddingBottom: 40 }}
             />
 
         </View>

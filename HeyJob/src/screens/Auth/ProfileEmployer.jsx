@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { useFocusEffect } from '@react-navigation/native';
 import { StyleSheet, View, Text, Image, TouchableOpacity, TouchableWithoutFeedback, ActivityIndicator, Linking, FlatList } from "react-native";
 import { bgButton1, bgButton2, grey, orange, textColor, white } from "../../assets/theme/color";
@@ -23,9 +23,7 @@ export default function ProfileEmployer({ navigation, route }) {
     const [loading, setLoading] = useState(true);
     const [employer, setEmployer] = useState('');
     const [user, dispatch] = useContext(MyContext)
-    console.log(user)
 
-    console.log(employer)
 
 
     useEffect(() => {
@@ -43,7 +41,7 @@ export default function ProfileEmployer({ navigation, route }) {
         const res = await authApi(token).get(endpoints['employer_detail'](employerId));
         setEmployer(res.data)
         setLoading(false)
-        console.log(employer)
+
     }
 
     const sendNotificationFollow = async () => {
@@ -92,9 +90,6 @@ export default function ProfileEmployer({ navigation, route }) {
     const handleLocationPress = () => {
         const address = encodeURIComponent(employer.employer.address);
         const url = `https://www.google.com/maps/search/?api=1&query=${address}`; // Google Maps
-
-        // Nếu muốn mở Apple Maps trên iOS, dùng URL sau:
-        // const url = `http://maps.apple.com/?q=${address}`;
 
         Linking.canOpenURL(url)
             .then((supported) => {
@@ -145,8 +140,9 @@ export default function ProfileEmployer({ navigation, route }) {
                         ))}
                     </View>
                     <View style={styleShare.flexBetween}>
-                        <View>
-                            <Text>Hạn ứng tuyển: {moment(item.expiration_date).format('DD/MM/YYYY')}</Text>
+                        <View style={styleShare.flexCenter}>
+                            <Icon name="time" size={22} color={'grey'} style={{ marginRight: 5 }} />
+                            <Text>{moment(item.expiration_date).format('DD/MM/YYYY')}</Text>
                         </View>
                     </View>
                 </View>
@@ -178,13 +174,12 @@ export default function ProfileEmployer({ navigation, route }) {
         const [jobs, setJobs] = useState([]);
 
         (
-            React.useCallback(() => {
+            useEffect(() => {
                 const fetchJobs = async () => {
                     try {
                         const token = await AsyncStorage.getItem("access-token");
                         const res = await authApi(token).get(endpoints['job_by_employer'](employerId));
                         setJobs(res.data);
-                        console.log(res.data)
                     } catch (error) {
                         console.error('Error fetching jobs:', error);
                     } finally {

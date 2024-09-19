@@ -14,9 +14,9 @@ import MyContext from "../../config/MyContext";
 import JobReducer, { initialState } from "../../reducer/JobReducer";
 
 export default function SaveJob({ navigation }) {
-    // const [jobs, setJobs] = useState([]);
+    const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [state, dispatch] = useReducer(JobReducer, initialState)
+    // const [state, dispatch] = useReducer(JobReducer, initialState)
 
     moment.locale('vi');
     useEffect(() => {
@@ -26,8 +26,8 @@ export default function SaveJob({ navigation }) {
         try {
             const token = await AsyncStorage.getItem("access-token");
             const res = await authApi(token).get(endpoints['save_job']);
-            // setJobs(res.data);
-            dispatch({ type: 'FETCH_JOBS_SUCCESS', payload: res.data });
+            setJobs(res.data);
+            // dispatch({ type: 'FETCH_JOBS_SUCCESS', payload: res.data });
 
         } catch (error) {
             console.error("Error fetching jobs:", error);
@@ -40,8 +40,9 @@ export default function SaveJob({ navigation }) {
         try {
             const token = await AsyncStorage.getItem("access-token");
             await authApi(token).delete(endpoints['unsave_job'](jobId));
-            dispatch({ type: 'UNSAVE_JOB_SUCCESS', payload: jobId });
+            // dispatch({ type: 'UNSAVE_JOB_SUCCESS', payload: jobId });
             ToastMess({ type: 'success', text1: 'Đã bỏ lưu việc làm.' });
+            fetchSaveJob()
 
         } catch (error) {
             console.error("Error fetching jobs:", error);
@@ -103,8 +104,11 @@ export default function SaveJob({ navigation }) {
                 rightIcon={"ellipsis-horizontal"}
                 title={'Việc làm đã lưu'}
                 handleLeftIcon={() => { navigation.goBack() }} />
+            <View style={{ marginHorizontal: 20, marginTop:5 }}>
+                <Text style={styleShare.titleJobAndName}>Số lượng: {jobs.length}</Text>
+            </View>
             <FlatList
-                data={state.jobs}
+                data={jobs}
                 renderItem={renderItem}
                 keyExtractor={item => item.job.id.toString()}
                 ListEmptyComponent={
@@ -114,7 +118,7 @@ export default function SaveJob({ navigation }) {
                         <Text style={{ padding: 20, textAlign: 'center' }}>Bạn không có bất kỳ bài tuyển dụng nào, hãy đăng bài tuyển dụng để tìm kiếm ứng viên tiềm năng</Text>
                     </View>
                 }
-                contentContainerStyle={{ paddingBottom: 40, paddingTop: 10 }}
+                contentContainerStyle={{ paddingBottom: 40 }}
             />
 
         </View>

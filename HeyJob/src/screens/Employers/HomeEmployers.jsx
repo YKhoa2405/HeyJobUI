@@ -12,6 +12,8 @@ export default function HomeEmployers({ navigation }) {
     const isEmployerComplete = user.employer.company_name !== null &&
         user.employer.company_name !== ""
 
+    const isEmployerDocument = user.employer.business_document !== null
+
     console.log(user)
 
     const manageEmployers = [
@@ -26,10 +28,10 @@ export default function HomeEmployers({ navigation }) {
                 <Icon name={'add-circle-outline'} size={20} color={bgButton1}></Icon>
                 <Text style={styleShare.lineText}>Đăng bài</Text>
             </TouchableOpacity>
-            {/* <TouchableOpacity style={styles.gridItemUtili} onPress={() => navigation.navigate('UpdateEmployer')}>
-                <Icon name={'person-circle-outline'} size={20} color={bgButton1}></Icon>
-                <Text style={styleShare.lineText}>Chỉnh sửa hồ sơ</Text>
-            </TouchableOpacity> */}
+            <TouchableOpacity style={styles.gridItemUtili} onPress={() => navigation.navigate('Shopping')}>
+                <Icon name={'cart-outline'} size={20} color={bgButton1}></Icon>
+                <Text style={styleShare.lineText}>Mua dịch vụ</Text>
+            </TouchableOpacity>
         </View>
     );
 
@@ -88,10 +90,10 @@ export default function HomeEmployers({ navigation }) {
                     {user.employer.approval_status === true ? (
                         <Chip style={{ marginTop: 5, backgroundColor: 'green', width: 130 }}><Text style={{ color: 'white' }}>Đã xác nhận</Text></Chip>
                     ) : (
-                        <Chip style={{ marginTop: 5, backgroundColor: 'red', width:130 }}><Text style={{ color: 'white' }}>Chưa xác nhận</Text></Chip>
+                        <Chip style={{ marginTop: 5, backgroundColor: 'red', width: 130 }}><Text style={{ color: 'white' }}>Chưa xác nhận</Text></Chip>
                     )}
                 </View>
-                <Avatar.Image source={{ uri: user.avatar }} size={50} style={{backgroundColor:'white'}} />
+                <Avatar.Image source={{ uri: user.avatar }} size={50} style={{ backgroundColor: 'white' }} />
             </View>
             {user.employer.approval_status === true ? (
                 <View style={styles.containerMain}>
@@ -140,7 +142,7 @@ export default function HomeEmployers({ navigation }) {
                     >
                         <View style={styleShare.flexBetween}>
                             <Text style={styleShare.titleJobAndName}>
-                                {isEmployerComplete ? "Đã hoàn thành" : "Cập nhật thông tin về công ty"}
+                                {isEmployerComplete ? "Cập nhật thông tin về công ty" : "Cập nhật thông tin về công ty"}
                             </Text>
                             <Icon
                                 name={isEmployerComplete ? "checkmark-circle-sharp" : "arrow-forward-circle"}
@@ -149,12 +151,21 @@ export default function HomeEmployers({ navigation }) {
                             />
                         </View>
                     </TouchableOpacity>
-                    <View style={styles.itemUploadCompany}>
-                        <TouchableOpacity style={styleShare.flexBetween}>
-                            <Text style={styleShare.titleJobAndName}>Tải lên các giấy tờ cần thiết</Text>
-                            <Icon name="arrow-forward-circle" size={30} color={orange} />
-                        </TouchableOpacity>
-                    </View>
+                    <TouchableOpacity style={styles.itemUploadCompany}
+                        onPress={() => navigation.navigate('UploadBusinessDocument')}
+                        disabled={isEmployerDocument}>
+                        <View style={styleShare.flexBetween}>
+                            <Text style={styleShare.titleJobAndName}>
+                                {isEmployerDocument ? "Tải lên các giấy tờ cần thiết" : "Tải lên các giấy tờ cần thiết"}
+                            </Text>
+                            <Icon
+                                name={isEmployerDocument ? "checkmark-circle-sharp" : "arrow-forward-circle"}
+                                size={30}
+                                color={orange}
+                            />
+                        </View>
+                    </TouchableOpacity>
+
                     <View style={{ marginTop: 20, padding: 20 }}>
                         <Text style={styleShare.titleJobAndName}>Sau khi hoàn thành các yêu cầu, quản trị viên sẽ duyệt tài khoản trở thành nhà tuyển dụng </Text>
                     </View>
@@ -199,7 +210,7 @@ const styles = StyleSheet.create({
     },
     gridUtili: {
         flexWrap: 'wrap',
-        justifyContent: 'space-between',
+        justifyContent: 'space-center',
         flexDirection: 'row',
         backgroundColor: white,
         padding: 20,

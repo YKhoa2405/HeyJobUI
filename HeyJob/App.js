@@ -41,6 +41,9 @@ import ChatDetail from './src/screens/Chat/ChatDetail.jsx';
 import ListFollow from './src/screens/Auth/ListFollow.jsx';
 import NotificationEmployer from './src/screens/Notification/NotificationEmployer.jsx';
 import SearchJobMap from './src/screens/Job/SearchJobMap.jsx';
+import Shopping from './src/screens/Employers/Shopping.jsx';
+import UploadBusinessDocument from './src/screens/Employers/UploadBusinessDocument.jsx';
+import VnPayScreen from './src/screens/Employers/VnPayScreen.jsx';
 
 
 const Stack = createNativeStackNavigator();
@@ -80,6 +83,10 @@ export default function App() {
           <Stack.Screen name="ChatDetail" component={ChatDetail} />
           <Stack.Screen name="ListFollow" component={ListFollow} />
           <Stack.Screen name="SearchJobMap" component={SearchJobMap} />
+          <Stack.Screen name="Shopping" component={Shopping} />
+          <Stack.Screen name="UploadBusinessDocument" component={UploadBusinessDocument} />
+          <Stack.Screen name="VnPayScreen" component={VnPayScreen} />
+
 
           {/* <Stack.Screen name="NotificationEmployer" component={NotificationEmployer} /> */}
 
@@ -97,6 +104,7 @@ export default function App() {
     // <UpdateEmployer/>
     // <Chat></Chat>
     // <SearchJobMap></SearchJobMap>
+    // <UploadBusinessDocument></UploadBusinessDocument>
   );
 }
 

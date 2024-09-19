@@ -44,7 +44,7 @@ export default function Profile({ navigation }) {
             const res = await API.get(endpoints['technology']);
             console.log(res.data.results)
             if (Array.isArray(res.data.results)) {
-                const techNames = res.data.results.map(item => item.name); // Chuyển đổi thành mảng các chuỗi
+                const techNames = res.data.results.map(item => item.id); // Chuyển đổi thành mảng các chuỗi
                 setTechnologies(techNames);
             } else {
                 console.error("res.data.results is not an array");
@@ -153,7 +153,7 @@ export default function Profile({ navigation }) {
                         </View>
                         <View style={[styleShare.flexBetween, { marginTop: 10 }]}>
                             <Text style={{ paddingRight: 10, fontWeight: '500' }}>{item.title}</Text>
-                            <Text style={styleShare.textMainOption}>{item.info}</Text>
+                            {/* <Text style={styleShare.textMainOption}>{item.info}</Text> */}
 
                         </View>
                     </View>

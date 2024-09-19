@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, TouchableWithoutFeedback } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, TouchableWithoutFeedback, TextInput } from "react-native";
 import styleShare from "../../assets/theme/style";
 import Icon from "react-native-vector-icons/Ionicons"
-import { bgButton1, bgButton2, grey } from "../../assets/theme/color";
+import { bgButton1, bgButton2, grey, white } from "../../assets/theme/color";
 import { Searchbar } from "react-native-paper";
 import MyContext from "../../config/MyContext";
 import { addDoc, collection, deleteDoc, getDocs, query, where } from "firebase/firestore";
@@ -32,6 +32,7 @@ export default function JobSearch({ navigation }) {
             ...doc.data(),
         }));
         setRecentJobs(jobs.reverse());
+        console.log(jobs)
     };
     const deleteAllRecentSearches = async () => {
         const q = query(collection(storeDb, 'search_recents'), where('userId', '==', user.id));
@@ -62,11 +63,18 @@ export default function JobSearch({ navigation }) {
         <View style={[styleShare.container, { marginHorizontal: 20 }]}>
             <View style={[styleShare.flexBetween, { marginTop: 30, marginBottom: 10 }]}>
                 <Icon name="arrow-back" size={26} color={bgButton1} onPress={() => navigation.goBack()} />
-                <Searchbar style={styleShare.searchComponent}
+                {/* <Searchbar style={styleShare.searchComponent}
                     placeholder="Địa điểm - Công ty - Ngành nghề"
                     value={searchQuery}
                     onChangeText={query => setSearchQuery(query)}
-                    onSubmitEditing={handleSearch} />
+                    onSubmitEditing={handleSearch} /> */}
+
+                <TextInput
+                    style={styleShare.searchHome}
+                    onSubmitEditing={handleSearch}
+                    value={searchQuery}
+                    onChangeText={query => setSearchQuery(query)}
+                    placeholder="Nhập từ khóa để tìm kiếm ..." />
             </View>
 
             {searchQuery === '' ? (
@@ -82,7 +90,7 @@ export default function JobSearch({ navigation }) {
                             data={recentJobs}
                             keyExtractor={item => item.id.toString()}
                             renderItem={({ item }) => (
-                                <TouchableWithoutFeedback key={item.id} onPress={() => navigation.navigate('JobSearchDetail', { searchContent: item.title })}>
+                                <TouchableWithoutFeedback key={item.id} onPress={() => navigation.navigate('JobSearchDetail', { searchContent: item.keyword })}>
                                     <View style={styles.recentSearchItem}>
                                         <Icon name="search-outline" size={22} color={bgButton1} />
                                         <Text style={styles.jobTitle}>{item.keyword}</Text>
@@ -123,5 +131,6 @@ const styles = StyleSheet.create({
     },
     jobTitle: {
         marginLeft: 10
-    }
+    },
+
 })

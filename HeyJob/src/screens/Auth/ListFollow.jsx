@@ -105,6 +105,9 @@ export default function ListFollow({ navigation }) {
             <UIHeader leftIcon={"arrow-back"}
                 title={'Công ty đã theo dõi'}
                 handleLeftIcon={() => { navigation.goBack() }} />
+            <View style={{ marginHorizontal: 20, marginTop: 5 }}>
+                <Text style={styleShare.titleJobAndName}>Số lượng: {company.length}</Text>
+            </View>
             <FlatList
                 data={company}
                 renderItem={renderItem}
@@ -116,7 +119,7 @@ export default function ListFollow({ navigation }) {
                         <Text style={{ padding: 20, textAlign: 'center' }}>Bạn không có bất kỳ bài tuyển dụng nào, hãy đăng bài tuyển dụng để tìm kiếm ứng viên tiềm năng</Text>
                     </View>
                 }
-                contentContainerStyle={{ paddingBottom: 40, paddingTop: 10 }}
+                contentContainerStyle={{ paddingBottom: 40 }}
             />
 
 

@@ -28,10 +28,10 @@ export default function Login({ navigation }) {
                 'Content-Type': 'application/x-www-form-urlencoded' // Change Content-Type
             };
             let data = {
-                username: 'ungvien',
-                // username: 'nhatuyendung',
+                // username: 'khoaungvien',
+                username: 'tuyendung1',
 
-                // password: 'caichyrua',
+                // password: 'caichyrua11',
                 password: '123456',
 
                 client_id: client_id_api,

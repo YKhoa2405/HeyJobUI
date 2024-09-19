@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, FlatList, TouchableWithoutFee
 import styleShare from "../../assets/theme/style";
 import Icon from "react-native-vector-icons/Ionicons"
 import { bgButton1, bgButton2, grey, orange, white } from "../../assets/theme/color";
-import { Searchbar, Chip } from "react-native-paper";
+import { Searchbar, Chip, Avatar } from "react-native-paper";
 import { authApi, endpoints } from "../../config/API";
 import axios from "axios";
 import MyContext from "../../config/MyContext";
@@ -19,8 +19,8 @@ export default function JobSearchDetail({ navigation, route }) {
     const [province, setProvince] = useState("")
     const [selectExperience, setSelectExperience] = useState(user.seeker.experience)
     const [selectedProvince, setSelectedProvince] = useState(user.seeker.location);
-    console.log(selectedProvince)
     const [selectedSalary, setSelectedSalary] = useState('')
+
     const salaries = ['Dưới 5 triệu', '10 - 15  triệu', '15 - 20 triệu', '20 - 25 triệu', '25 - 30 triệu', '30 - 50 triệu', 'Trên 50 triệu', 'Thỏa thuận'];
     const experiences = ['Không yêu cầu', 'Thực tập sinh', 'Dưới 1 năm', '1 năm', '2 năm', '3 năm', '4 năm', '5 năm', 'Trên 5 năm'];
     const [modalVisible, setModalVisible] = useState({
@@ -32,7 +32,8 @@ export default function JobSearchDetail({ navigation, route }) {
     const buildSearchUrl = (searchContent, experience, location, salary) => {
         return `/jobs/search/?title=${encodeURIComponent(searchContent || '')}&experience=${encodeURIComponent(experience || '')}&location=${encodeURIComponent(location || '')}&salary=${encodeURIComponent(salary || '')}`;
     };
-    const searchUrl = buildSearchUrl(searchContent, selectExperience, selectedProvince, selectedProvince);
+
+    const searchUrl = buildSearchUrl(searchContent, selectExperience, selectedProvince, selectedSalary);
     const [recentJobs, setRecentJobs] = useState([]);
 
 
@@ -65,6 +66,7 @@ export default function JobSearchDetail({ navigation, route }) {
             //     }
             // });
             const response = await authApi(token).get(searchUrl);
+            console.log(searchUrl)
             setRecentJobs(response.data);
         } catch (error) {
             console.error('Error fetching jobs:', error);
@@ -91,7 +93,7 @@ export default function JobSearchDetail({ navigation, route }) {
             <View style={styles.jobItemContainer}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <View style={styles.containerAvatarJob}>
-                        <Image source={require('../../assets/images/google.png')} style={styles.avatarJob} />
+                        <Avatar.Image source={{ uri: item.employer.avatar }} size={36} style={{ backgroundColor: 'white' }} />
                     </View>
                     <View>
                         <Text style={styleShare.titleJobAndName}>{item.title}</Text>
@@ -108,8 +110,13 @@ export default function JobSearchDetail({ navigation, route }) {
                         </Chip>
                     ))}
                 </View>
-                <View>
-                    <Text>Hạn ứng tuyển: {moment(item.expiration_date).format('DD/MM/YYYY')}</Text>
+                <View style={styleShare.flexBetween}>
+                    <View style={styleShare.flexCenter}>
+                        <Icon name="time" size={22} color={'grey'} style={{ marginRight: 5 }} />
+
+                        {/* <Text>Đã thêm: {moment(item.created_at).fromNow()}</Text> */}
+                        <Text>{moment(item.expiration_date).format('DD/MM/YYYY')}</Text>
+                    </View>
                 </View>
             </View>
         </TouchableWithoutFeedback>
@@ -131,11 +138,11 @@ export default function JobSearchDetail({ navigation, route }) {
                 </TouchableOpacity>
             </View>
             <View style={styles.containerMain}>
-                <Searchbar style={[styleShare.searchComponent, { width: '100%', marginBottom: 10 }]}
-                    value={searchContent}
-                    editable={false}
-                    clearIcon={true} />
-                <View style={styleShare.flexCenter}>
+                <TouchableOpacity onPress={() => navigation.navigate('JobSearch')} style={styles.searchDetail}>
+                    <Icon name="search" color={bgButton1} size={24} style={{ marginRight: 10 }} />
+                    <Text>{searchContent}</Text>
+                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' }}>
                     <TouchableOpacity style={styles.optionSearch} onPress={() => setModalVisible({ ...modalVisible, experience: true })}>
                         <Text>{selectExperience ? selectExperience : 'Kinh nghiệm'}</Text>
                         <Icon name="chevron-down-outline" size={20} color={orange} />
@@ -222,16 +229,14 @@ const styles = StyleSheet.create({
         marginHorizontal: 5
     },
     optionSearch: {
-        borderWidth: 1,
         flexDirection: 'row',
         paddingHorizontal: 20,
         paddingVertical: 5,
-        borderColor: bgButton2,
         marginRight: 10,
         borderRadius: 20,
         backgroundColor: white,
-        flex: 1,
-        justifyContent: 'space-between'
+        justifyContent: 'flex-start',
+        elevation: 3
     },
     jobItemContainer: {
         backgroundColor: white,
@@ -248,16 +253,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginRight: 15
     },
-    avatarJob: {
-        width: 30,
-        height: 30
-    },
-    btnSave: {
-        position: 'absolute',
-        top: 20,
-        right: 20,
-        opacity: 0.8
-    },
     infoJobContainer: {
         paddingTop: 20,
         paddingRight: 10,
@@ -267,5 +262,14 @@ const styles = StyleSheet.create({
     containerflat: {
         paddingTop: 10,
         paddingBottom: 20
+    },
+    searchDetail: {
+        flexDirection: 'row',
+        backgroundColor: white,
+        width: '100%',
+        borderRadius: 10, padding: 10,
+        alignItems: 'center',
+        elevation: 2,
+        marginBottom: 10
     }
 })

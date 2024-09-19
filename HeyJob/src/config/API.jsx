@@ -1,7 +1,7 @@
 import axios from "axios";
 
-const HOST = "https:/ykhoa2405.pythonanywhere.com"
-// const HOST = "http://127.0.0.1:8000/"
+// const HOST = "https:/ykhoa2405.pythonanywhere.com"
+const HOST = "http://192.168.1.120:8000"
 
 
 
@@ -33,8 +33,8 @@ export const endpoints = {
     // save job
     'save_job': '/save_job/',
     'unsave_job': (jobId) => `/save_job/${jobId}/`,
-
-
+    //services
+    'services_list': '/services/',
 
     // technology
     'technology': '/technology/',
@@ -44,11 +44,13 @@ export const endpoints = {
     'apply_list_new': '/apply/employer_apply_new/',
     'apply_list_seeker': '/apply/seeker_apply/',
     'apply': (jobId) => `/apply/${jobId}/apply_job/`,
-    'apply_detail': (applyId) => `/apply/${applyId}/apply_detail/`,
+    // 'apply_detail': (applyId) => `/apply/${applyId}/apply_detail/`,
     'apply_update_status': (applyId) => `/apply/${applyId}/`,
+    // vn pay
+    'vnpay_post': '/vnpay/payment_url/',
 
     // Lấy tỉnh thành
-    'province': 'https://esgoo.net/api-tinhthanh/1/0.htm'
+    'province': 'https://esgoo.net/api-tinhthanh/1/0.htm',
 
 }
 

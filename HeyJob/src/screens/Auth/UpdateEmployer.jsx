@@ -130,6 +130,7 @@ export default function UpdateEmployer({ navigation }) {
             });
             console.log('Response:', res.data);
             ToastMess({ type: 'success', text1: 'Cập nhật thông tin thành công.' });
+            navigation.navigate('HomeEmployers')
 
         } catch (error) {
             console.error('Error:', error.response ? error.response.data : error.message);

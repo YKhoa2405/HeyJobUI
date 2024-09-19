@@ -95,13 +95,14 @@ const styleShare = StyleSheet.create({
         marginRight: 10,
         marginTop: 10
     },
-    searchComponent: {
-        borderRadius: 30,
+    searchHome: {
+        flexDirection: 'row',
+        backgroundColor: white,
         width: '85%',
         marginRight: 10,
-        backgroundColor: white,
-        borderWidth: 1,
-        borderColor: grey,
+        borderRadius: 10, padding: 10,
+        alignItems: 'center',
+        elevation: 2
     },
     imageNullData: {
         width: 200,

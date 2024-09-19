@@ -18,7 +18,6 @@ export default function CVApplyNew({ navigation }) {
     const [cv, setCv] = useState([]);
     const [loading, setLoading] = useState(true);
     const [user, dispatch] = useContext(MyContext)
-    console.log(user)
     moment.locale('vi');
 
 
@@ -145,11 +144,13 @@ export default function CVApplyNew({ navigation }) {
                     </View>
                     <View style={{ marginTop: 5 }}>
                         <TouchableOpacity onPress={() => handleOpenEmail(item.seeker_info.email)}>
-                            <Text>Email: {item.email}</Text>
+                            <Text>Email: <Text style={{ color: bgButton1, textDecorationLine: 'underline' }} >{item.email}</Text></Text>
+
 
                         </TouchableOpacity>
-                        <Text>Họ và  tên: {item.name}</Text>
-                        <Text>Số điện thoại: {item.phone}</Text>
+                        <Text>Họ và tên: <Text style={{ color: bgButton1 }}>{item.name}</Text></Text>
+                        <Text>Số điện thoại: <Text style={{ color: bgButton1 }}>{item.phone}</Text></Text>
+
                     </View>
                     <View style={{ marginVertical: 5 }}>
                         <Text style={{ color: bgButton1, fontWeight: '500' }}>Thư giới thiệu:</Text>

@@ -66,7 +66,7 @@ export default function Home({ navigation }) {
                 <Avatar.Image source={{ uri: user.avatar }} size={36} style={{ backgroundColor: 'white' }} />
             </View>
             <View style={{ marginHorizontal: 20, marginVertical: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                <TouchableOpacity onPress={() => navigation.navigate('JobSearch')} style={styles.searchHome}>
+                <TouchableOpacity onPress={() => navigation.navigate('JobSearch')} style={styleShare.searchHome}>
                     <Icon name="search" color={bgButton1} size={24} style={{ marginRight: 10 }} />
                     <Text>Tìm kiếm việc làm</Text>
                 </TouchableOpacity>
@@ -217,20 +217,12 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         marginTop: 10
     },
-    searchHome: {
-        flexDirection: 'row',
-        backgroundColor: white,
-        width: '85%',
-        marginRight: 10,
-        borderRadius: 10, padding: 10,
-        alignItems: 'center',
-        elevation:2
-    },
+
     searchMap: {
         padding: 10,
         borderRadius: 10,
         backgroundColor: 'white',
-        elevation:2
+        elevation: 2
     }
 
 })

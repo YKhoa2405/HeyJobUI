@@ -14,7 +14,7 @@ export default function UploadCV({ navigation, route }) {
     const { jobId } = route.params
     const [user, dispatch] = useContext(MyContext)
     const [name, setName] = useState('')
-    const [email, setEmail] = useState('')
+    const [email, setEmail] = useState(user.email)
     const [phone, setPhone] = useState('')
 
     const [coverLetter, setCoverLetter] = useState('')
@@ -63,16 +63,16 @@ export default function UploadCV({ navigation, route }) {
         formData.append('phone', phone);
         formData.append('name', name);
 
+        console.log(formData)
 
-        const token = await AsyncStorage.getItem("access-token");
         try {
+            const token = await AsyncStorage.getItem("access-token");
             await authApi(token).post(endpoints['apply'](jobId), formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
             navigation.navigate('ApplySuccess')
-            console.log
 
         } catch (error) {
             console.error('Lỗi khi gửi đơn xin việc:', error);
@@ -160,7 +160,6 @@ export default function UploadCV({ navigation, route }) {
                         <Text style={styles.buttonText}>Ứng tuyển</Text>
                     </TouchableOpacity>
                 )}
-
             </View>
 
         </View>
