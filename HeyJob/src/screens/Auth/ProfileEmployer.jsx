@@ -1,5 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from "react";
-import { useFocusEffect } from '@react-navigation/native';
+import React, { useContext, useEffect, useState } from "react";
 import { StyleSheet, View, Text, Image, TouchableOpacity, TouchableWithoutFeedback, ActivityIndicator, Linking, FlatList } from "react-native";
 import { bgButton1, bgButton2, grey, orange, textColor, white } from "../../assets/theme/color";
 import { Avatar, Chip, IconButton } from "react-native-paper";
@@ -12,7 +11,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { authApi, endpoints } from "../../config/API";
 import moment from "moment";
 import { ToastMess } from "../../components/ToastMess";
-import { addDoc, collection, doc, serverTimestamp, setDoc } from "firebase/firestore";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { storeDb } from "../../config/Firebase";
 
 
@@ -25,7 +24,6 @@ export default function ProfileEmployer({ navigation, route }) {
     const [user, dispatch] = useContext(MyContext)
 
 
-
     useEffect(() => {
         fetchEmployerDetail()
         // fetchJobsByEmployer()
@@ -33,9 +31,6 @@ export default function ProfileEmployer({ navigation, route }) {
     const handleOpenEmail = (email) => {
         Linking.openURL(`mailto:${email}`).catch(err => console.error("Failed to open email:", err));
     };
-    const handleOpenWebsite = (url) => {
-        Linking.openURL(url).catch(err => console.error("Failed to open URL:", err));
-    }
     const fetchEmployerDetail = async () => {
         const token = await AsyncStorage.getItem("access-token");
         const res = await authApi(token).get(endpoints['employer_detail'](employerId));
@@ -116,9 +111,9 @@ export default function ProfileEmployer({ navigation, route }) {
                         <View style={styles.btnSave}>
                             <Icon name="bookmark" size={26} color={orange} />
                         </View> :
-                        <TouchableOpacity style={styles.btnSave} onPress={() => handleSaveJob(item.id)}>
+                        <View style={styles.btnSave}>
                             <Icon name="bookmark-outline" size={26} />
-                        </TouchableOpacity>
+                        </View>
                     }
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <View style={styles.containerAvatarJob}>
@@ -191,25 +186,28 @@ export default function ProfileEmployer({ navigation, route }) {
             }, [employerId])
         );
 
-        if (loading) {
-            return <ActivityIndicator style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} size="large" color={orange} />;
-        }
-
         return (
-            <FlatList
-                data={jobs}
-                renderItem={renderItem}
-                keyExtractor={item => item.id.toString()}
-                ListEmptyComponent={
-                    <View style={{ marginTop: 50, alignItems: 'center' }}>
-                        <Image source={require("../../assets/images/save.png")} style={styleShare.imageNullData} />
-                        <Text style={styleShare.textMainOption}>Hiện tại chưa có tin tuyển dụng nào</Text>
-                        <Text style={{ padding: 20, textAlign: 'center' }}>Công ty hiện tại chưa có tin tuyển dụng nào, hãy quay lại lần sau để cập nhật</Text>
-                    </View>
-                }
-                contentContainerStyle={{ paddingBottom: 40, paddingTop: 10 }}
-            />
+            <View style={{ flex: 1 }}>
+                {loading ? (
+                    <ActivityIndicator style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} size="large" color='orange' />
+                ) : (
+                    <FlatList
+                        data={jobs}
+                        renderItem={renderItem}
+                        keyExtractor={item => item.id.toString()}
+                        ListEmptyComponent={
+                            <View style={{ marginTop: 50, alignItems: 'center' }}>
+                                <Image source={require("../../assets/images/save.png")} style={styleShare.imageNullData} />
+                                <Text style={styleShare.textMainOption}>Hiện tại chưa có tin tuyển dụng nào</Text>
+                                <Text style={{ padding: 20, textAlign: 'center' }}>Công ty hiện tại chưa có tin tuyển dụng nào, hãy quay lại lần sau để cập nhật</Text>
+                            </View>
+                        }
+                        contentContainerStyle={{ paddingBottom: 40, paddingTop: 10 }}
+                    />
+                )}
+            </View>
         );
+
     };
 
 
@@ -235,17 +233,21 @@ export default function ProfileEmployer({ navigation, route }) {
                 </View>
             </View>
             <View style={styles.containerMain}>
-                <View style={[styleShare.flexBetween, { marginHorizontal: 20 }]}>
-                    <TouchableOpacity onPress={() => handleFollow()}>
+                <View style={[styleShare.flexCenter, { marginHorizontal: 20 }]}>
+                    <TouchableOpacity onPress={() => handleFollow()} style={{ marginRight: 20 }}>
                         <View style={[styleShare.buttonDetailApply, { backgroundColor: white }]}>
                             <Icon name="add-circle-outline" size={22} />
                             <Text style={{ marginLeft: 5 }}>Theo dõi công ty</Text>
                         </View>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleOpenWebsite(employer.employer.website)}>
+                    <TouchableOpacity onPress={() => navigation.navigate("ChatDetail", {
+                        userInfo: {
+                            id: String(employer.id),
+                        }
+                    })}>
                         <View style={[styleShare.buttonDetailApply, { backgroundColor: white }]}>
-                            <Icon name="open-outline" size={22} />
-                            <Text style={{ marginLeft: 5 }}>Truy cập website</Text>
+                            <Icon name="chatbubble-outline" size={22} />
+                            <Text style={{ marginLeft: 5 }}>Nhắn tin</Text>
                         </View>
                     </TouchableOpacity>
                 </View>
@@ -258,7 +260,7 @@ export default function ProfileEmployer({ navigation, route }) {
                             tabBarStyle: { backgroundColor: grey },
                         }}>
                         <Tab.Screen name="Giới thiệu công ty" component={ProfileTab1} />
-                        <Tab.Screen name={`Tin tuyển dụng (${employer.employer.job_count})`} component={ProfileTab2} />
+                        <Tab.Screen name={'Tin tuyển dụng'} component={ProfileTab2} />
                     </Tab.Navigator>
                 </View>
             </View>

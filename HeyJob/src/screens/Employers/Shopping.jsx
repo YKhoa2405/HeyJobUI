@@ -24,8 +24,8 @@ export default function Shopping({ navigation }) {
     const handleFetchService = async () => {
         try {
             const res = await API.get(endpoints['services_list'])
-            setService(res.data.results)
-            console.log(res.data.results)
+            setService(res.data)
+            console.log(res.data)
         } catch (error) {
             console.log(error)
         } finally {
@@ -33,7 +33,7 @@ export default function Shopping({ navigation }) {
         }
     }
 
-    const handlePayService = async (amount) => {
+    const handlePayService = async (amount, serviceId) => {
         try {
             const token = await AsyncStorage.getItem("access-token");
             const response = await authApi(token).post(endpoints['vnpay_post'], {
@@ -42,7 +42,8 @@ export default function Shopping({ navigation }) {
             const url = response.data.payment_url
             setUrlPay(url)
             console.log(url)
-            await WebBrowser.openBrowserAsync(url);
+            // await WebBrowser.openBrowserAsync(url);
+            navigation.navigate('VnPayScreen', { url: url, serviceId: serviceId })
         } catch (error) {
             console.log(error)
             ToastMess({ type: 'error', text1: 'Có lỗi xảy ra, vui lòng thử lại.' });
@@ -65,7 +66,7 @@ export default function Shopping({ navigation }) {
                     <Text style={{ fontWeight: '500', fontSize: 16 }}>{item.description}</Text>
                     <Text style={{ fontWeight: '500', fontSize: 16, color: 'grey' }}>Thời hạn: <Text style={{ color: orange }}>{item.duration} tháng</Text></Text>
 
-                    <TouchableOpacity style={styles.buttonShopping} onPress={() => handlePayService(item.price)}>
+                    <TouchableOpacity style={styles.buttonShopping} onPress={() => handlePayService(item.price, item.id)}>
                         <Text style={{ color: white, fontWeight: 500 }}>Mua ngay</Text>
                     </TouchableOpacity>
                 </View>

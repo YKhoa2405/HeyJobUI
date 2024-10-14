@@ -44,6 +44,8 @@ import SearchJobMap from './src/screens/Job/SearchJobMap.jsx';
 import Shopping from './src/screens/Employers/Shopping.jsx';
 import UploadBusinessDocument from './src/screens/Employers/UploadBusinessDocument.jsx';
 import VnPayScreen from './src/screens/Employers/VnPayScreen.jsx';
+import SendOtp from './src/screens/Auth/SendOtp.jsx';
+import ServiceList from './src/screens/Employers/ServiceList.jsx';
 
 
 const Stack = createNativeStackNavigator();
@@ -86,11 +88,7 @@ export default function App() {
           <Stack.Screen name="Shopping" component={Shopping} />
           <Stack.Screen name="UploadBusinessDocument" component={UploadBusinessDocument} />
           <Stack.Screen name="VnPayScreen" component={VnPayScreen} />
-
-
-          {/* <Stack.Screen name="NotificationEmployer" component={NotificationEmployer} /> */}
-
-
+          <Stack.Screen name="ServiceList" component={ServiceList} />
 
 
         </Stack.Navigator>
@@ -98,13 +96,6 @@ export default function App() {
 
       </NavigationContainer>
     </MyContext.Provider>
-
-    // <Notification/>
-    // <UploadCV />
-    // <UpdateEmployer/>
-    // <Chat></Chat>
-    // <SearchJobMap></SearchJobMap>
-    // <UploadBusinessDocument></UploadBusinessDocument>
   );
 }
 
@@ -123,6 +114,9 @@ function MainTab() {
             else if (route.name === 'Notification') {
               iconName = focused ? 'notifications' : 'notifications-outline';
             }
+            else if (route.name === 'Chat') {
+              iconName = focused ? 'chatbubble-ellipses-sharp' : 'chatbubble-outline';
+            }
             else if (route.name === 'Profile') {
               iconName = focused ? 'person-circle' : 'person-circle-outline';
             }
@@ -137,6 +131,7 @@ function MainTab() {
         })}
       >
         <Tab.Screen name="Home" component={Home} />
+        <Tab.Screen name="Chat" component={Chat} />
         <Tab.Screen name="Notification" component={Notification} />
         <Tab.Screen name="Profile" component={Profile} />
       </Tab.Navigator>
@@ -157,6 +152,9 @@ function EmployerTab() {
             if (route.name === 'HomeEmployers') {
               iconName = focused ? 'home' : 'home-outline';
             }
+            else if (route.name === 'Chat') {
+              iconName = focused ? 'chatbubble-ellipses-sharp' : 'chatbubble-outline';
+            }
             else if (route.name === 'NotificationEmployer') {
               iconName = focused ? 'notifications' : 'notifications-outline';
             }
@@ -171,7 +169,9 @@ function EmployerTab() {
         })}
       >
         <Tab.Screen name="HomeEmployers" component={HomeEmployers} />
+        <Tab.Screen name="Chat" component={Chat} />
         <Tab.Screen name="NotificationEmployer" component={NotificationEmployer} />
+
       </Tab.Navigator>
     </KeyboardAvoidingView>
 
@@ -201,6 +201,11 @@ function AuthStack() {
       <Stack.Screen
         name="ForgotPass"
         component={ForgotPass}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="SendOtp"
+        component={SendOtp}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

@@ -4,7 +4,6 @@ import axios from "axios";
 const HOST = "http://192.168.1.120:8000"
 
 
-
 export const endpoints = {
     // user
     'users': '/users/',
@@ -15,8 +14,12 @@ export const endpoints = {
     'employer_detail': (userId) => `/users/${userId}/employer_detail/`,
     'follow': (userId) => `/users/${userId}/follow/`,
     'unfollow': (userId) => `/users/${userId}/unfollow/`,
-
     'following_list': '/users/following/',
+    'send_otp': '/users/send_otp/',
+    'reset-password': '/users/reset-password/',
+    'statistics': '/statistics/',
+    'job_application_statis': '/statistics/applications_per_month/',
+
 
 
     //job
@@ -35,6 +38,10 @@ export const endpoints = {
     'unsave_job': (jobId) => `/save_job/${jobId}/`,
     //services
     'services_list': '/services/',
+    'services_detail': (serviceId) => `/services/${serviceId}/`,
+
+    'purchase': (serviceId) => `/services/${serviceId}/purchase/`,
+    'purchased_services': '/services/purchased_services/',
 
     // technology
     'technology': '/technology/',

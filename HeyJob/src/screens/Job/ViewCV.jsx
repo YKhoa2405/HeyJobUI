@@ -2,10 +2,12 @@ import React from "react";
 import { View, StyleSheet } from "react-native";
 import UIHeader from "../../components/UIHeader";
 import styleShare from "../../assets/theme/style";
+import { WebView } from 'react-native-webview';
+
 
 export default function ViewCV({ navigation, route }) {
     const { cv } = route.params;
-    console.log
+    console.log(cv)
 
     return (
         <View style={styleShare.container}>
@@ -15,8 +17,10 @@ export default function ViewCV({ navigation, route }) {
                 title={'Xem lại CV'}
                 handleLeftIcon={() => navigation.goBack()}
             />
-            <View style={{ flex: 1 }}>
-            </View>
+            <WebView
+                style={{ flex: 1 }}
+                source={{ uri: cv }}
+            />
         </View>
     );
 }

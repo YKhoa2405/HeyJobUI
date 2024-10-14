@@ -53,7 +53,7 @@ export default function UpdateEmployer({ navigation }) {
             const res = await axios.get('https://esgoo.net/api-tinhthanh/1/0.htm');
             setProvinces(res.data.data || []);
         } catch (error) {
-            console.error('Error fetching provinces:', error);
+            console.log('Error fetching provinces:', error);
         }
     };
 
@@ -66,7 +66,7 @@ export default function UpdateEmployer({ navigation }) {
                 setWards([]);
             }
         } catch (error) {
-            console.error('Error fetching districts:', error);
+            console.log('Error fetching districts:', error);
         }
     };
 
@@ -77,7 +77,7 @@ export default function UpdateEmployer({ navigation }) {
                 setWards(response.data.data || []);
             }
         } catch (error) {
-            console.error('Error fetching wards:', error);
+            console.log('Error fetching wards:', error);
         }
     };
 
@@ -142,100 +142,103 @@ export default function UpdateEmployer({ navigation }) {
 
 
     return (
-        <ScrollView showsVerticalScrollIndicator={false}>
-            <View style={styleShare.container}>
-                <UIHeader title={'Cập nhật thông tin công ty'}
-                    leftIcon={"arrow-back"}
-                    handleLeftIcon={() => { navigation.goBack() }} />
-                <View style={styles.containerMain}>
-                    <Text style={styles.textInput}>Tên công ty</Text>
-                    <InputMain
-                        placeholder="Tên công ty"
-                        onChangeText={setCompanyName}
-
-                    />
-                    <Text style={styles.textInput}>Website</Text>
-                    <InputMain
-                        placeholder="https://www.heyjob.vn"
-                        onChangeText={setWebsite}
-                        autoCapitalize="none"
-                    />
-
-                    <Text style={styles.textInput}>Quy mô công ty</Text>
-                    <InputMain
-                        placeholder="Số lượng nhân viên của công ty"
-                        onChangeText={(text) => {
-                            // Loại bỏ tất cả ký tự không phải số
-                            const numericValue = text.replace(/[^0-9]/g, '');
-                            setSize(numericValue);
-                        }}
-                        autoCapitalize="none"
-                        keyboardType="numeric"
-                    />
-
-                    <Text style={styles.textInput}>Địa chỉ công ty</Text>
-                    <Picker
-                        selectedValue={selectedProvinceId}
-                        onValueChange={(itemValue) => {
-                            setSelectedProvinceId(itemValue);
-                            fetchDistricts(itemValue);
-                        }}
-                        style={styles.inputSelect}
-                    >
-                        <Picker.Item label="Chọn tỉnh/thành" value="" />
-                        {provinces.map((province) => (
-                            <Picker.Item key={province.id} label={province.full_name} value={province.id} />
-                        ))}
-                    </Picker>
-                    <Picker
-                        selectedValue={selectedDistrictId}
-                        onValueChange={(itemValue) => {
-                            setSelectedDistrictId(itemValue);
-                            fetchWards(itemValue);
-                        }}
-                        style={styles.inputSelect}
-                        enabled={!!selectedProvinceId}
-                    >
-                        <Picker.Item label="Chọn quận/huyện" value="" />
-                        {districts.map((district) => (
-                            <Picker.Item key={district.id} label={district.full_name} value={district.id} />
-                        ))}
-                    </Picker>
-                    <Picker
-                        selectedValue={selectedWardId}
-                        onValueChange={setSelectedWardId}
-                        style={styles.inputSelect}
-                        enabled={!!selectedDistrictId}
-                    >
-                        <Picker.Item label="Chọn phường/xã" value="" />
-                        {wards.map((ward) => (
-                            <Picker.Item key={ward.id} label={ward.full_name} value={ward.id} />
-                        ))}
-                    </Picker>
-                    <View>
+        <View style={styleShare.container}>
+            <UIHeader title={'Cập nhật thông tin công ty'}
+                leftIcon={"arrow-back"}
+                handleLeftIcon={() => { navigation.goBack() }} />
+            <ScrollView showsVerticalScrollIndicator={false}>
+                <View style={styleShare.container}>
+                    <View style={styles.containerMain}>
+                        <Text style={styles.textInput}>Tên công ty</Text>
                         <InputMain
-                            placeholder="Tên đường, số, địa chỉ cụ thể, ..."
-                            onChangeText={setAddress}
-                        />
-                    </View>
+                            placeholder="Tên công ty"
+                            onChangeText={setCompanyName}
 
-                    <Text style={styles.textInput}>Giới thiệu về công ty</Text>
-                    <TextInput
-                        placeholder="Mô tả về công ty"
-                        onChangeText={setDescription}
-                        style={styles.introduceInput}
-                        multiline={true}
-                        numberOfLines={9}
-                        textAlignVertical="top"
-                    />
-                    {loading ? (
-                        <ActivityIndicator color={orange} size={'large'} />
-                    ) : (
-                        <ButtonMain title={'Cập nhật'} backgroundColor={bgButton1} textColor={white} onPress={() => handleUpdateEmployer()} />
-                    )}
+                        />
+                        <Text style={styles.textInput}>Website</Text>
+                        <InputMain
+                            placeholder="https://www.heyjob.vn"
+                            onChangeText={setWebsite}
+                            autoCapitalize="none"
+                        />
+
+                        <Text style={styles.textInput}>Quy mô công ty</Text>
+                        <InputMain
+                            placeholder="Số lượng nhân viên của công ty"
+                            onChangeText={(text) => {
+                                // Loại bỏ tất cả ký tự không phải số
+                                const numericValue = text.replace(/[^0-9]/g, '');
+                                setSize(numericValue);
+                            }}
+                            autoCapitalize="none"
+                            keyboardType="numeric"
+                        />
+
+                        <Text style={styles.textInput}>Địa chỉ công ty</Text>
+                        <Picker
+                            selectedValue={selectedProvinceId}
+                            onValueChange={(itemValue) => {
+                                setSelectedProvinceId(itemValue);
+                                fetchDistricts(itemValue);
+                            }}
+                            style={styles.inputSelect}
+                        >
+                            <Picker.Item label="Chọn tỉnh/thành" value="" />
+                            {provinces.map((province) => (
+                                <Picker.Item key={province.id} label={province.full_name} value={province.id} />
+                            ))}
+                        </Picker>
+                        <Picker
+                            selectedValue={selectedDistrictId}
+                            onValueChange={(itemValue) => {
+                                setSelectedDistrictId(itemValue);
+                                fetchWards(itemValue);
+                            }}
+                            style={styles.inputSelect}
+                            enabled={!!selectedProvinceId}
+                        >
+                            <Picker.Item label="Chọn quận/huyện" value="" />
+                            {districts.map((district) => (
+                                <Picker.Item key={district.id} label={district.full_name} value={district.id} />
+                            ))}
+                        </Picker>
+                        <Picker
+                            selectedValue={selectedWardId}
+                            onValueChange={setSelectedWardId}
+                            style={styles.inputSelect}
+                            enabled={!!selectedDistrictId}
+                        >
+                            <Picker.Item label="Chọn phường/xã" value="" />
+                            {wards.map((ward) => (
+                                <Picker.Item key={ward.id} label={ward.full_name} value={ward.id} />
+                            ))}
+                        </Picker>
+                        <View>
+                            <InputMain
+                                placeholder="Tên đường, số, địa chỉ cụ thể, ..."
+                                onChangeText={setAddress}
+                            />
+                        </View>
+
+                        <Text style={styles.textInput}>Giới thiệu về công ty</Text>
+                        <TextInput
+                            placeholder="Mô tả về công ty"
+                            onChangeText={setDescription}
+                            style={styles.introduceInput}
+                            multiline={true}
+                            numberOfLines={9}
+                            textAlignVertical="top"
+                        />
+                        {loading ? (
+                            <ActivityIndicator color={orange} size={'large'} />
+                        ) : (
+                            <ButtonMain title={'Cập nhật'} backgroundColor={bgButton1} textColor={white} onPress={() => handleUpdateEmployer()} />
+                        )}
+                    </View>
                 </View>
-            </View>
-        </ScrollView>
+            </ScrollView>
+
+        </View>
     )
 }
 

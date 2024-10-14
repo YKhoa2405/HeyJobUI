@@ -10,10 +10,11 @@ import API, { authApi, endpoints } from "../../config/API";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { ToastMess } from "../../components/ToastMess";
+import ReusableModalId from "../../components/ReusableModelId";
 
 export default function Profile({ navigation }) {
     const [user, dispatch] = useContext(MyContext)
-    
+    console.log(user)
     const [province, setProvince] = useState([])
     const [selectExperience, setSelectExperience] = useState('')
     const [selectedProvince, setSelectedProvince] = useState('');
@@ -42,13 +43,7 @@ export default function Profile({ navigation }) {
     const fetchTechnology = async () => {
         try {
             const res = await API.get(endpoints['technology']);
-            console.log(res.data.results)
-            if (Array.isArray(res.data.results)) {
-                const techNames = res.data.results.map(item => item.id); // Chuyển đổi thành mảng các chuỗi
-                setTechnologies(techNames);
-            } else {
-                console.error("res.data.results is not an array");
-            }
+            setTechnologies(res.data);
         } catch (error) {
             console.error("Error fetching technology data", error);
         }
@@ -62,9 +57,9 @@ export default function Profile({ navigation }) {
     ]
 
     const manageJob = [
-        { id: 1, icon: 'bookmark', title: 'Việc làm đã lưu', info: user.seeker.saved_count },
-        { id: 2, icon: 'briefcase', title: 'Việc làm đã ứng tuyển', info: user.seeker.apply_count },
-        { id: 3, icon: 'business', title: 'Công ty đã theo dõi', info: user.seeker.following_count },
+        { id: 1, icon: 'bookmark', title: 'Việc làm đã lưu', },
+        { id: 2, icon: 'briefcase', title: 'Việc làm đã ứng tuyển', },
+        { id: 3, icon: 'business', title: 'Công ty đã theo dõi', },
     ]
 
     const handleManageJobClick = (id) => {
@@ -99,11 +94,11 @@ export default function Profile({ navigation }) {
     const handleProvinceSelect = (province) => {
         setSelectedProvince(province);
     };
-    const handleTechnologySelect = (technology) => {
+    const handleTechnologySelect = (id) => {
         setSelectedTechnologies(prevTechnologies =>
-            prevTechnologies.includes(technology)
-                ? prevTechnologies.filter(item => item !== technology)
-                : [...prevTechnologies, technology]
+            prevTechnologies.includes(id)
+                ? prevTechnologies.filter(item => item !== id) // Bỏ chọn
+                : [...prevTechnologies, id] // Thêm ID vào danh sách chọn
         );
     };
 
@@ -118,20 +113,17 @@ export default function Profile({ navigation }) {
                 },
             });
             ToastMess({ type: 'success', text1: 'Cập nhật thông tin thành.' });
-
+            console.log(formData)
         } catch (error) {
             ToastMess({ type: 'error', text1: 'Có lỗi xảy ra, vui lòng thử lại.' });
-
+            console.log(error)
         }
     };
 
     const handleUpdateTechnology = async () => {
-        try {
-            await handleUpdate('technologies', selectedTechnologies);
-            console.log(selectedTechnologies)
-        } catch (error) {
-            console.error("Error updating technologies:", error);
-        }
+        await handleUpdate('technologies', selectedTechnologies);
+        console.log(selectedTechnologies)
+
     };
     const handleUpdateExperience = async () => {
         await handleUpdate('experience', selectExperience);
@@ -169,7 +161,7 @@ export default function Profile({ navigation }) {
                     <Avatar.Image
                         source={{ uri: user.avatar }}
                         size={60}
-                        style={{ marginLeft: 40, marginRight: 20, backgroundColor:'white' }}
+                        style={{ marginLeft: 40, marginRight: 20, backgroundColor: 'white' }}
                     />
                     <View>
                         <Text style={styleShare.titleJobAndName}>{user.username}</Text>
@@ -303,7 +295,7 @@ export default function Profile({ navigation }) {
                 }}
                 singleSelect={true}
             />
-            <ReusableModal
+            <ReusableModalId
                 visible={modalVisible.technology}
                 onClose={() => setModalVisible({ ...modalVisible, technology: false })}
                 title="Chọn kĩ năng của bạn"

@@ -14,6 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ToastMess } from "../../components/ToastMess";
 import axios from "axios";
 import { azuze_map_primary_key_api } from "../../config/Key";
+import ReusableModalId from "../../components/ReusableModelId";
 
 export default function AddPost({ navigation }) {
     const [provinces, setProvinces] = useState([]);
@@ -138,31 +139,20 @@ export default function AddPost({ navigation }) {
                 const { latitude, longitude } = await getCoordinatesFromAddress(detail);
                 setLon(parseFloat(longitude));
                 setLat(parseFloat(latitude));
-                console.log('Longitude:', longitude);
-                console.log('Latitude:', latitude);
             } catch (error) {
-                setError(error.message);
+                console.log(error)
             }
         } else {
             console.log('Detail is null or empty');
         }
-
-
-        console.log(detail);
-
     };
 
     const fetchTechnology = async () => {
         try {
             const res = await API.get(endpoints['technology']);
-            if (Array.isArray(res.data.results)) {
-                const techNames = res.data.results.map(item => item.id); // Chuyển đổi thành mảng các chuỗi
-                setTechnologies(techNames);
-            } else {
-                console.error("res.data.results is not an array");
-            }
+            setTechnologies(res.data);
         } catch (error) {
-            console.error("Error fetching technology data", error);
+            console.log("Error fetching technology data", error);
         }
     }
 
@@ -177,11 +167,11 @@ export default function AddPost({ navigation }) {
     };
 
 
-    const handleTechnologySelect = (technology) => {
+    const handleTechnologySelect = (id) => {
         setSelectedTechnologies(prevTechnologies =>
-            prevTechnologies.includes(technology)
-                ? prevTechnologies.filter(item => item !== technology)
-                : [...prevTechnologies, technology]
+            prevTechnologies.includes(id)
+                ? prevTechnologies.filter(item => item !== id) // Bỏ chọn
+                : [...prevTechnologies, id] // Thêm ID vào danh sách chọn
         );
     };
 
@@ -214,7 +204,6 @@ export default function AddPost({ navigation }) {
             latitude: lat,
             longitude: lon,
         };
-        console.log(jobData)
 
         try {
             const token = await AsyncStorage.getItem("access-token");
@@ -234,201 +223,203 @@ export default function AddPost({ navigation }) {
         }
     };
 
-    if (loading) {
-        return <ActivityIndicator style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} size="large" color='orange' />;
-    }
 
     return (
         <View style={styleShare.container}>
             <UIHeader leftIcon={"arrow-back"}
                 handleLeftIcon={() => { navigation.goBack() }}
                 title={'Đăng tin tuyển dụng'} />
-            <ScrollView showsVerticalScrollIndicator={false}>
-                <View style={styles.containerMain}>
-                    <Text style={styles.textInput}>Tiêu đề</Text>
-                    <TextInput
-                        placeholder="Tiêu đề tin tuyển dụng"
-                        onChangeText={setTitle}
-                        style={styles.introduceInput}
-                    />
-                    <View>
-                        <Text style={styles.textInput}>Địa điểm làm việc</Text>
-
-                        <Picker
-                            selectedValue={selectedProvinceId}
-                            onValueChange={(itemValue) => {
-                                setSelectedProvinceId(itemValue);
-                                fetchDistricts(itemValue);
-                            }}
-                            style={styles.inputSelect}
-                        >
-                            <Picker.Item label="Chọn tỉnh/thành" value="" />
-                            {provinces.map((province) => (
-                                <Picker.Item key={province.id} label={province.full_name} value={province.id} />
-                            ))}
-                        </Picker>
-                        <Picker
-                            selectedValue={selectedDistrictId}
-                            onValueChange={(itemValue) => {
-                                setSelectedDistrictId(itemValue);
-                                fetchWards(itemValue);
-                            }}
-                            style={styles.inputSelect}
-                            enabled={!!selectedProvinceId}
-                        >
-                            <Picker.Item label="Chọn quận/huyện" value="" />
-                            {districts.map((district) => (
-                                <Picker.Item key={district.id} label={district.full_name} value={district.id} />
-                            ))}
-                        </Picker>
-                        <Picker
-                            selectedValue={selectedWardId}
-                            onValueChange={setSelectedWardId}
-                            style={styles.inputSelect}
-                            enabled={!!selectedDistrictId}
-                        >
-                            <Picker.Item label="Chọn phường/xã" value="" />
-                            {wards.map((ward) => (
-                                <Picker.Item key={ward.id} label={ward.full_name} value={ward.id} />
-                            ))}
-                        </Picker>
-                        <View style={styleShare.flexCenter}>
-
-                        </View>
-                    </View>
-                    <TextInput
-                        style={styles.inputSelect}
-                        placeholder="Tên đường, số công ty, vị trí cụ thể ..."
-                        onChangeText={setStreet}
-                        multiline={true} />
-
-
-                    <View style={styleShare.flexBetween}>
-                        <View style={{ flex: 1 }}>
-                            <Text style={styles.textInput}>Mức lương</Text>
-                            <TouchableOpacity onPress={() => setModalVisible({ ...modalVisible, salary: true })} >
-                                <View style={styles.inputSelect}>
-                                    <Text>{selectedSalary ? selectedSalary : "Chọn mức lương"}</Text>
-                                    <Icon name="chevron-down" size={22} color="orange" />
-                                </View>
-                            </TouchableOpacity>
-                        </View>
-                        <View style={{ flex: 1, marginLeft: 10 }}>
-                            <Text style={styles.textInput}>Kinh nghiệm</Text>
-                            <TouchableOpacity onPress={() => setModalVisible({ ...modalVisible, experience: true })} >
-
-                                <View style={styles.inputSelect}>
-                                    <Text>{selectExperience ? selectExperience : "Kinh nghiệm"}</Text>
-                                    <Icon name="chevron-down" size={22} color="orange" />
-                                </View>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-
-                    <ReusableModal
-                        visible={modalVisible.salary}
-                        onClose={() => setModalVisible({ ...modalVisible, salary: false })}
-                        title="Chọn mức lương"
-                        data={salaries}
-                        selectedItems={selectedSalary ? [selectedSalary] : []}
-                        onItemPress={handleSalarySelect}
-                        onComplete={() => setModalVisible({ ...modalVisible, salary: false })}
-                        singleSelect={true}
-                    />
-                    <ReusableModal
-                        visible={modalVisible.experience}
-                        onClose={() => setModalVisible({ ...modalVisible, experience: false })}
-                        title="Chọn kinh nghiệm yêu cầu"
-                        data={experiences}
-                        selectedItems={selectExperience ? [selectExperience] : []}
-                        onItemPress={handleExperienceSelect}
-                        onComplete={() => setModalVisible({ ...modalVisible, experience: false })}
-                        singleSelect={true}
-                    />
-
-                    <Text style={styles.textInput}>Công nghệ</Text>
-                    <TouchableOpacity onPress={() => setModalVisible({ ...modalVisible, technology: true })}>
-                        <View style={styles.inputSelect}>
-                            <Text>{selectedTechnologies.length > 0 ? selectedTechnologies.join(', ') : "Chọn công nghệ"}</Text>
-                            <Icon name="chevron-down" size={22} color="orange" />
-                        </View>
-                    </TouchableOpacity>
-
-                    <ReusableModal
-                        visible={modalVisible.technology}
-                        onClose={() => setModalVisible({ ...modalVisible, technology: false })}
-                        title="Chọn công nghệ"
-                        data={technologies}
-                        selectedItems={selectedTechnologies}
-                        onItemPress={handleTechnologySelect}
-                        onComplete={() => setModalVisible({ ...modalVisible, technology: false })}
-                    />
-
-                    <View style={styleShare.flexBetween}>
-                        <View style={{ flex: 1 }}>
-                            <Text style={styles.textInput}>Thời gian hết hạn</Text>
-                            <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-                                <View style={styles.inputSelect}>
-                                    <Text>{expirationDate ? expirationDate.toLocaleDateString() : "Chọn ngày hết hạn"} </Text>
-                                    <Icon name="chevron-down" size={22} color="orange" />
-                                </View >
-                            </TouchableOpacity>
-                        </View>
-                        <View style={{ flex: 1, marginLeft: 10 }}>
-                            <Text style={styles.textInput}>Số lượng tuyển</Text>
-                            <TextInput
-                                style={styles.introduceInput}
-                                placeholder="Số lượng tuyển"
-                                keyboardType="numeric"
-                                maxLength={5}
-                                onChangeText={(text) => {
-                                    // Chỉ cho phép nhập các ký tự số
-                                    const numericValue = text.replace(/[^0-9]/g, '');
-                                    setQuantity(numericValue ? parseInt(numericValue) : 0);
-                                }}
-                                value={quantity ? String(quantity) : ''}
-                                multiline={false}
-                            />
-
-                        </View>
-                    </View>
-
-                    {/* Hiển thị DateTimePicker */}
-                    {showDatePicker && (
-                        <DateTimePicker
-                            value={expirationDate}
-                            mode="date" // Chọn ngày. Có thể là 'date' hoặc 'time'
-                            display="default"
-                            onChange={onChange} // Cập nhật giá trị khi người dùng chọn ngày
-                            onClose={() => setShowDatePicker(false)} // Đóng picker sau khi chọn
+            {loading ? (
+                <ActivityIndicator style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} size="large" color='orange' />
+            ) : (
+                <ScrollView showsVerticalScrollIndicator={false}>
+                    <View style={styles.containerMain}>
+                        <Text style={styles.textInput}>Tiêu đề</Text>
+                        <TextInput
+                            placeholder="Tiêu đề tin tuyển dụng"
+                            onChangeText={setTitle}
+                            style={styles.introduceInput}
                         />
-                    )}
-                    <Text style={styles.textInput}>Mô tả</Text>
-                    <TextInput
-                        style={styles.introduceInput}
-                        placeholder="Mô tả về công việc ..."
-                        onChangeText={setDescription}
-                        multiline={true}
-                        numberOfLines={7}
-                        textAlignVertical="top"
-                    />
-                    <Text style={styles.textInput}>Yêu cầu</Text>
-                    <TextInput
-                        style={styles.introduceInput}
-                        placeholder="Ghi ra yêu cầu công việc dành cho ứng viên ..."
-                        onChangeText={setRequirements}
-                        multiline={true}
-                        numberOfLines={7}
-                        textAlignVertical="top"
-                    />
-                    <View style={{ marginTop: 20 }}></View>
-                    {loading ? (
-                        <ActivityIndicator color={orange} size={'large'} />
-                    ) : (
-                        <ButtonMain title={'Đăng'} backgroundColor={bgButton1} textColor={white} onPress={() => handlePostJob()} />
-                    )}
-                </View>
-            </ScrollView>
+                        <View>
+                            <Text style={styles.textInput}>Địa điểm làm việc</Text>
+
+                            <Picker
+                                selectedValue={selectedProvinceId}
+                                onValueChange={(itemValue) => {
+                                    setSelectedProvinceId(itemValue);
+                                    fetchDistricts(itemValue);
+                                }}
+                                style={styles.inputSelect}
+                            >
+                                <Picker.Item label="Chọn tỉnh/thành" value="" />
+                                {provinces.map((province) => (
+                                    <Picker.Item key={province.id} label={province.full_name} value={province.id} />
+                                ))}
+                            </Picker>
+                            <Picker
+                                selectedValue={selectedDistrictId}
+                                onValueChange={(itemValue) => {
+                                    setSelectedDistrictId(itemValue);
+                                    fetchWards(itemValue);
+                                }}
+                                style={styles.inputSelect}
+                                enabled={!!selectedProvinceId}
+                            >
+                                <Picker.Item label="Chọn quận/huyện" value="" />
+                                {districts.map((district) => (
+                                    <Picker.Item key={district.id} label={district.full_name} value={district.id} />
+                                ))}
+                            </Picker>
+                            <Picker
+                                selectedValue={selectedWardId}
+                                onValueChange={setSelectedWardId}
+                                style={styles.inputSelect}
+                                enabled={!!selectedDistrictId}
+                            >
+                                <Picker.Item label="Chọn phường/xã" value="" />
+                                {wards.map((ward) => (
+                                    <Picker.Item key={ward.id} label={ward.full_name} value={ward.id} />
+                                ))}
+                            </Picker>
+                            <View style={styleShare.flexCenter}>
+
+                            </View>
+                        </View>
+                        <TextInput
+                            style={styles.inputSelect}
+                            placeholder="Tên đường, số công ty, vị trí cụ thể ..."
+                            onChangeText={setStreet}
+                            multiline={true} />
+
+
+                        <View style={styleShare.flexBetween}>
+                            <View style={{ flex: 1 }}>
+                                <Text style={styles.textInput}>Mức lương</Text>
+                                <TouchableOpacity onPress={() => setModalVisible({ ...modalVisible, salary: true })} >
+                                    <View style={styles.inputSelect}>
+                                        <Text>{selectedSalary ? selectedSalary : "Chọn mức lương"}</Text>
+                                        <Icon name="chevron-down" size={22} color="orange" />
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+                            <View style={{ flex: 1, marginLeft: 10 }}>
+                                <Text style={styles.textInput}>Kinh nghiệm</Text>
+                                <TouchableOpacity onPress={() => setModalVisible({ ...modalVisible, experience: true })} >
+
+                                    <View style={styles.inputSelect}>
+                                        <Text>{selectExperience ? selectExperience : "Kinh nghiệm"}</Text>
+                                        <Icon name="chevron-down" size={22} color="orange" />
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+
+                        <ReusableModal
+                            visible={modalVisible.salary}
+                            onClose={() => setModalVisible({ ...modalVisible, salary: false })}
+                            title="Chọn mức lương"
+                            data={salaries}
+                            selectedItems={selectedSalary ? [selectedSalary] : []}
+                            onItemPress={handleSalarySelect}
+                            onComplete={() => setModalVisible({ ...modalVisible, salary: false })}
+                            singleSelect={true}
+                        />
+                        <ReusableModal
+                            visible={modalVisible.experience}
+                            onClose={() => setModalVisible({ ...modalVisible, experience: false })}
+                            title="Chọn kinh nghiệm yêu cầu"
+                            data={experiences}
+                            selectedItems={selectExperience ? [selectExperience] : []}
+                            onItemPress={handleExperienceSelect}
+                            onComplete={() => setModalVisible({ ...modalVisible, experience: false })}
+                            singleSelect={true}
+                        />
+
+                        <Text style={styles.textInput}>Công nghệ</Text>
+                        <TouchableOpacity onPress={() => setModalVisible({ ...modalVisible, technology: true })}>
+                            <View style={styles.inputSelect}>
+                                <Text>{selectedTechnologies.length > 0 ? selectedTechnologies.join(', ') : "Chọn công nghệ"}</Text>
+                                <Icon name="chevron-down" size={22} color="orange" />
+                            </View>
+                        </TouchableOpacity>
+
+                        <ReusableModalId
+                            visible={modalVisible.technology}
+                            onClose={() => setModalVisible({ ...modalVisible, technology: false })}
+                            title="Chọn công nghệ"
+                            data={technologies}
+                            selectedItems={selectedTechnologies}
+                            onItemPress={handleTechnologySelect}
+                            onComplete={() => setModalVisible({ ...modalVisible, technology: false })}
+                        />
+
+                        <View style={styleShare.flexBetween}>
+                            <View style={{ flex: 1 }}>
+                                <Text style={styles.textInput}>Thời gian hết hạn</Text>
+                                <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+                                    <View style={styles.inputSelect}>
+                                        <Text>{expirationDate ? expirationDate.toLocaleDateString() : "Chọn ngày hết hạn"} </Text>
+                                        <Icon name="chevron-down" size={22} color="orange" />
+                                    </View >
+                                </TouchableOpacity>
+                            </View>
+                            <View style={{ flex: 1, marginLeft: 10 }}>
+                                <Text style={styles.textInput}>Số lượng tuyển</Text>
+                                <TextInput
+                                    style={styles.introduceInput}
+                                    placeholder="Số lượng tuyển"
+                                    keyboardType="numeric"
+                                    maxLength={5}
+                                    onChangeText={(text) => {
+                                        // Chỉ cho phép nhập các ký tự số
+                                        const numericValue = text.replace(/[^0-9]/g, '');
+                                        setQuantity(numericValue ? parseInt(numericValue) : 0);
+                                    }}
+                                    value={quantity ? String(quantity) : ''}
+                                    multiline={false}
+                                />
+
+                            </View>
+                        </View>
+
+                        {/* Hiển thị DateTimePicker */}
+                        {showDatePicker && (
+                            <DateTimePicker
+                                value={expirationDate}
+                                mode="date" // Chọn ngày. Có thể là 'date' hoặc 'time'
+                                display="default"
+                                onChange={onChange} // Cập nhật giá trị khi người dùng chọn ngày
+                                onClose={() => setShowDatePicker(false)} // Đóng picker sau khi chọn
+                            />
+                        )}
+                        <Text style={styles.textInput}>Mô tả</Text>
+                        <TextInput
+                            style={styles.introduceInput}
+                            placeholder="Mô tả về công việc ..."
+                            onChangeText={setDescription}
+                            multiline={true}
+                            numberOfLines={7}
+                            textAlignVertical="top"
+                        />
+                        <Text style={styles.textInput}>Yêu cầu</Text>
+                        <TextInput
+                            style={styles.introduceInput}
+                            placeholder="Ghi ra yêu cầu công việc dành cho ứng viên ..."
+                            onChangeText={setRequirements}
+                            multiline={true}
+                            numberOfLines={7}
+                            textAlignVertical="top"
+                        />
+                        <View style={{ marginTop: 20 }}></View>
+                        {loading ? (
+                            <ActivityIndicator color={orange} size={'large'} />
+                        ) : (
+                            <ButtonMain title={'Đăng'} backgroundColor={bgButton1} textColor={white} onPress={() => handlePostJob()} />
+                        )}
+                    </View>
+                </ScrollView>
+            )}
+
         </View>
     )
 }

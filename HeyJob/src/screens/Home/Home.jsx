@@ -17,7 +17,6 @@ export default function Home({ navigation }) {
     const [loading, setLoading] = useState(true)
     const [user, dispatch] = useContext(MyContext)
     // const [jobSalary, dispatch_job] = useReducer(JobReducer, initialState)
-    console.log(user)
 
 
     useEffect(() => {
@@ -27,16 +26,24 @@ export default function Home({ navigation }) {
 
     const fetchJobRecommned = async () => {
         const token = await AsyncStorage.getItem("access-token");
-        const res = await authApi(token).get(endpoints['job_recommned']);
-        setJobRecommned(res.data)
+        const res = await authApi(token).get(endpoints['job_recommned'], {
+            params: {
+                page: 1
+            },
+        });
+        setJobRecommned(res.data.results)
         setLoading(false)
     }
 
     const fetchJobHighSalary = async () => {
         const token = await AsyncStorage.getItem("access-token");
-        const res = await authApi(token).get(endpoints['job_salary']);
-        setJobSalary(res.data)
+        const res = await authApi(token).get(endpoints['job_salary'], {
+            params: {
+                page: 1
+            },
+        });
         console.log(res.data)
+        setJobSalary(res.data.results)
         setLoading(false)
     }
 
@@ -48,7 +55,6 @@ export default function Home({ navigation }) {
 
 
         } catch (error) {
-            console.error("Lỗi khi lưu công việc:", error);
             ToastMess({ type: 'error', text1: 'Không thể lưu công việc. Vui lòng thử lại.' });
         }
     }

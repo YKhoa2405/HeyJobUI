@@ -13,11 +13,14 @@ import MyContext from "../../config/MyContext";
 import { ToastMess } from "../../components/ToastMess";
 import { addDoc, collection, doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { storeDb } from "../../config/Firebase";
+import * as WebBrowser from 'expo-web-browser';
 
 export default function CVApplyNew({ navigation }) {
     const [cv, setCv] = useState([]);
     const [loading, setLoading] = useState(true);
     const [user, dispatch] = useContext(MyContext)
+    const [currentPage, setCurrentPage] = useState(1);
+
     moment.locale('vi');
 
 
@@ -25,8 +28,9 @@ export default function CVApplyNew({ navigation }) {
         Linking.openURL(`mailto:${email}`).catch(err => console.error("Failed to open email:", err));
     };
 
-    const handleOpenCv = (url) => {
-        Linking.openURL(url).catch(err => console.error("Failed to open URL:", err));
+    const handleOpenCv = async (url) => {
+        // Linking.openURL(url).catch(err => console.error("Failed to open URL:", err));
+        await WebBrowser.openBrowserAsync(url);
     }
 
     useEffect(() => {
@@ -57,12 +61,21 @@ export default function CVApplyNew({ navigation }) {
         }
     };
 
-    const fetchApplicationCVNew = async () => {
+    const fetchApplicationCVNew = async (page = 1) => {
         try {
             const token = await AsyncStorage.getItem("access-token");
-            const res = await authApi(token).get(endpoints['apply_list_new']);
-            setCv(res.data);
+            const res = await authApi(token).get(endpoints['apply_list_new'], {
+                params: {
+                    page: page, // Sử dụng page truyền vào
+                },
+            });
+            setCv(prevJobs => [...prevJobs, ...res.data.results]);
             console.log(res.data);
+            if (res.data.next) {
+                setCurrentPage(page); // Cập nhật trang hiện tại
+            } else {
+                setCurrentPage(null); // Không có trang tiếp theo
+            }
         } catch (error) {
             console.error("Error fetching jobs:", error);
         } finally {
@@ -70,6 +83,11 @@ export default function CVApplyNew({ navigation }) {
         }
     };
 
+    const handleLoadMore = () => {
+        const nextPage = currentPage + 1; // Tăng trang lên 1
+        setCurrentPage(nextPage); // Cập nhật trang hiện tại
+        fetchApplicationCVNew(nextPage); // Tải công việc từ trang mới
+    };
     const handleUpdateStatus = async (applyId, status, seekerId, jobId) => {
         Alert.alert(
             "Cập nhật đơn ứng tuyển",
@@ -87,7 +105,6 @@ export default function CVApplyNew({ navigation }) {
                             const token = await AsyncStorage.getItem("access-token");
 
                             await authApi(token).patch(endpoints['apply_update_status'](applyId), { status: status });
-                            fetchApplicationCVNew(); // Tải lại thông tin ứng tuyển sau khi cập nhật
                             ToastMess({ type: 'success', text1: 'Cập nhật thành công.' });
                             sendNotificationToApplicant(seekerId, jobId)
 
@@ -201,6 +218,16 @@ export default function CVApplyNew({ navigation }) {
                     </View>
                 }
                 contentContainerStyle={{ paddingBottom: 40, paddingTop: 10 }}
+                ListFooterComponent={
+                    <View style={{ alignItems: 'center', marginVertical: 20 }}>
+                        {currentPage ? (
+                            <TouchableOpacity onPress={handleLoadMore} disabled={loading}>
+                                <Text style={{ color: bgButton1, fontSize: 16, fontWeight: '500' }}>Xem thêm</Text>
+                            </TouchableOpacity>
+                        ) : (
+                            <Text style={{ color: 'grey', fontSize: 16, fontWeight: 'bold' }}></Text>
+                        )}
+                    </View>}
             />
 
 

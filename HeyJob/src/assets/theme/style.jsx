@@ -53,7 +53,7 @@ const styleShare = StyleSheet.create({
     imageLogin: {
         width: 300,
         height: 300,
-        marginBottom: 20,
+
         resizeMode: 'center'
     },
     containerAvatar: {

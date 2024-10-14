@@ -11,8 +11,8 @@ import { ToastMess } from "../../components/ToastMess";
 import MyContext from "../../config/MyContext";
 import ButtonMain from "../../components/ButtonMain";
 
-export default function UploadBusinessDocument({navigation}) {
-    const [loading, setLoading] = useState(true);
+export default function UploadBusinessDocument({ navigation }) {
+    const [loading, setLoading] = useState(false);
     const [document, setDocument] = useState(null)
 
     const handleUploadFile = async () => {
@@ -46,6 +46,7 @@ export default function UploadBusinessDocument({navigation}) {
             type: document.mimeType,
             name: document.name,
         });
+        setLoading(true)
         try {
 
             await authApi(token).patch(endpoints['update_employer'], formData, {
@@ -58,14 +59,11 @@ export default function UploadBusinessDocument({navigation}) {
 
         } catch (error) {
             ToastMess({ type: 'error', text1: 'Có lỗi xảy ra, vui lòng thử lại.' });
-        } finally{
+        } finally {
             setLoading(false)
         }
     }
 
-    if (loading) {
-        return <ActivityIndicator style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} size="large" color='orange' />;
-    }
 
     return (
         <View style={styleShare.container}>
@@ -104,12 +102,16 @@ export default function UploadBusinessDocument({navigation}) {
                     <Text>Mặt sau</Text>
                 </View>
                 <View>
-                    <ButtonMain
+                    {loading ? (
+                        <ActivityIndicator color={orange} size={'large'} />
+                    ) : (<ButtonMain
                         title={'Cập nhật'}
                         backgroundColor={bgButton1}
                         textColor={white}
                         onPress={() => handleUpdateDocument()}
                     />
+                    )}
+
                 </View>
             </ScrollView>
         </View>

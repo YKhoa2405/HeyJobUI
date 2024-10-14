@@ -137,7 +137,7 @@ export default function Notification({ navigation }) {
             <View>
                 <View style={[styles.notification, item.viewed && styles.viewedNotification]}>
                     <View style={{ marginEnd: 15 }}>
-                        <Avatar.Image source={require("../../assets/images/google.png")} size={40} />
+                        <Avatar.Image source={{uri:item.avatar}} size={40} />
                     </View>
                     <View style={{ flex: 1 }}>
                         <Text style={styleShare.titleJobAndName} ellipsizeMode="tail" numberOfLines={2}>{item.title}</Text>

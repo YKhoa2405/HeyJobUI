@@ -1,7 +1,6 @@
 import React from "react";
 import { StyleSheet, View, Text, Image, TouchableOpacity } from "react-native";
 import { bgButton1, orange, white } from "../../assets/theme/color";
-import { IconButton } from "react-native-paper";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import styleShare from "../../assets/theme/style";
 

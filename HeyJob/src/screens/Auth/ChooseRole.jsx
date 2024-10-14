@@ -6,6 +6,7 @@ import { bgButton1, white } from "../../assets/theme/color";
 import { ToastMess } from "../../components/ToastMess";
 import API, { endpoints } from "../../config/API";
 
+
 export default function ChooseRole({ navigation, route }) {
     const { email, password, userName, avatar } = route.params;
     const [role, setRole] = useState(null);
@@ -19,56 +20,47 @@ export default function ChooseRole({ navigation, route }) {
     }, [role]);
 
     const handleChooseRole = (r) => {
-        setRole(r)
-        handleSignUp()
+        setRole(r); 
     }
 
     const handleSignUp = async () => {
-        setIsLoading(true)
+        setIsLoading(true);
         let formRegister = new FormData();
         formRegister.append('username', userName);
         formRegister.append('email', email);
         formRegister.append('password', password);
         if (avatar) {
             const uriParts = avatar.split('.');
-            const fileType = uriParts[uriParts.length - 1];  // Lấy phần mở rộng file (jpg, png, v.v)
-            
+            const fileType = uriParts[uriParts.length - 1];  // Lấy phần mở rộng file
+    
             formRegister.append('avatar', {
-                uri: avatar,  // Đường dẫn URI của ảnh
-                name: `avatar.${fileType}`,  // Tên file (ví dụ: avatar.jpg)
-                type: `image/${fileType}`,  // Loại file (MIME type: image/jpg, image/png, v.v)
+                uri: avatar,
+                name: `avatar.${fileType}`,
+                type: `image/${fileType}`,
             });
         }
         formRegister.append('role', role);
-
-        console.log(formRegister)
-
+    
         try {
             await API.post(endpoints['users'], formRegister, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-
-            // setIsLoading(false);
-            ToastMess({ type: 'success', text1: 'Đăng ký tài khoản thành công' })
-
-            if (role == 'Ung vien') {
-                navigation.navigate('Login')
-            } else {
-                navigation.navigate('UpdateEmployer')
-            }
+    
+            ToastMess({ type: 'success', text1: 'Đăng ký tài khoản thành công' });
+            navigation.navigate('Login');
         } catch (error) {
-            console.log(error)
-            // // Xử lý lỗi
-            // if (error.response && error.response.status === 400) {
-            //     ToastMess({ type: 'error', text1: 'Người dùng đã tồn tại' })
-            // } else {
-            // }
-        } finally{
-            setIsLoading(false)
+            if (error.response && error.response.status === 400) {
+                ToastMess({ type: 'error', text1: 'Người dùng đã tồn tại' });
+            } else {
+                ToastMess({ type: 'error', text1: 'Đã xảy ra lỗi. Vui lòng thử lại.' });
+            }
+        } finally {
+            setIsLoading(false);
         }
     }
+
     if (isLoading) {
         return <ActivityIndicator style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} size="large" color='orange' />;
     }
@@ -120,7 +112,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingVertical: 40,
         flex: 1,
-        margin: 10
+        margin: 10,
     },
     imageChoose: {
         width: 100,

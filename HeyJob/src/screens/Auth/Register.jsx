@@ -4,9 +4,7 @@ import styleShare from "../../assets/theme/style";
 import InputMain from "../../components/InputMain";
 import { bgButton1, bgButton2, orange, white } from "../../assets/theme/color";
 import ButtonMain from "../../components/ButtonMain";
-import { auth } from "../../config/Firebase";
 import { ToastMess } from "../../components/ToastMess";
-import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import * as ImagePicker from 'expo-image-picker';
 
 
@@ -32,21 +30,6 @@ export default function Register({ navigation }) {
         }
     }
 
-    const translateFirebaseError = (errorCode) => {
-        switch (errorCode) {
-            case 'auth/invalid-email':
-                return 'Địa chỉ email không hợp lệ.';
-            case 'auth/email-already-in-use':
-                return 'Email đã được sử dụng.';
-            case 'auth/weak-password':
-                return 'Mật khẩu quá yếu. Vui lòng chọn mật khẩu mạnh hơn.';
-            case 'auth/operation-not-allowed':
-                return 'Hoạt động này không được phép.';
-            default:
-                return 'Đã xảy ra lỗi. Vui lòng thử lại.';
-        }
-    };
-
     const handleSignUp = async () => {
         if (!email || !password || !userName || !passwordAg || !avatar) {
             ToastMess({ type: 'error', text1: 'Vui lòng không để trống các trường.' });
@@ -57,18 +40,6 @@ export default function Register({ navigation }) {
             ToastMess({ type: 'error', text1: 'Mật khẩu và mật khẩu xác nhận không khớp.' });
             return;
         }
-
-        // try {
-        //     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        //     const user = userCredential.user;
-
-        //     await sendEmailVerification(user);
-        //     ToastMess({ type: "success", text1: "Email xác thực đã được gửi. Vui lòng kiểm tra hộp thư." });
-        //     navigation.navigate('ChooseRole')
-        // } catch (e) {
-        //     const errorMessage = translateFirebaseError(e.code);
-        //     ToastMess({ type: 'error', text1: errorMessage });
-        // } 
 
 
         navigation.navigate('ChooseRole', {

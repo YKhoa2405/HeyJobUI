@@ -12,7 +12,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 export default function CVApply({ navigation }) {
     const [cv, setCv] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
     moment.locale('vi');
+
+    console.log(cv)
 
     const handleOpenEmail = (email) => {
         Linking.openURL(`mailto:${email}`).catch(err => console.error("Failed to open email:", err));
@@ -25,12 +28,22 @@ export default function CVApply({ navigation }) {
     useEffect(() => {
         fetchApplicationCV()
     }, []);
-    const fetchApplicationCV = async () => {
+    const fetchApplicationCV = async (page = 1) => {
         try {
             const token = await AsyncStorage.getItem("access-token");
-            const res = await authApi(token).get(endpoints['apply_list']);
-            setCv(res.data);
-            console.log(res.data);
+            const res = await authApi(token).get(endpoints['apply_list'], {
+                params: {
+                    page: page, // Sử dụng page truyền vào
+                },
+            });
+            setCv(prevJobs => [...prevJobs, ...res.data.results]); // Gộp công việc mới vào danh sách cũ
+            console.log(res.data.results);
+            // Cập nhật thông tin trang tiếp theo
+            if (res.data.next) {
+                setCurrentPage(page); // Cập nhật trang hiện tại
+            } else {
+                setCurrentPage(null); // Không có trang tiếp theo
+            }
         } catch (error) {
             console.error("Error fetching jobs:", error);
         } finally {
@@ -38,7 +51,11 @@ export default function CVApply({ navigation }) {
         }
     };
 
-
+    const handleLoadMore = () => {
+        const nextPage = currentPage + 1; // Tăng trang lên 1
+        setCurrentPage(nextPage); // Cập nhật trang hiện tại
+        fetchApplicationCV(nextPage); // Tải công việc từ trang mới
+    };
 
 
 
@@ -70,12 +87,25 @@ export default function CVApply({ navigation }) {
                             Đã đồng ý
                         </Text>
                     </View>
-                    <TouchableOpacity onPress={() => handleOpenCv(item.cv)}>
-                        <View style={[styleShare.buttonDetailApply, { marginTop: 10 }]}>
-                            <Icon name="document-outline" size={22} />
-                            <Text style={{ marginLeft: 5 }}>Xem CV ứng viên</Text>
-                        </View>
-                    </TouchableOpacity>
+                    <View style={styleShare.flexCenter}>
+                        <TouchableOpacity onPress={() => handleOpenCv(item.cv)}>
+                            <View style={[styleShare.buttonDetailApply, { marginTop: 10, marginEnd: 15 }]}>
+                                <Icon name="document-outline" size={22} />
+                                <Text style={{ marginLeft: 5 }}>Xem CV ứng viên</Text>
+                            </View>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => navigation.navigate("ChatDetail", {
+                            userInfo: {
+                                id: String(item.seeker_info.id)
+                            }
+                        })}>
+                            <View style={[styleShare.buttonDetailApply, { marginTop: 10 }]}>
+                                <Icon name="chatbubble-outline" size={22} />
+                                <Text style={{ marginLeft: 5 }}>Nhắn tin</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+
                 </View>
 
             </TouchableWithoutFeedback>
@@ -104,6 +134,17 @@ export default function CVApply({ navigation }) {
                     </View>
                 }
                 contentContainerStyle={{ paddingBottom: 40, paddingTop: 10 }}
+
+                ListFooterComponent={
+                    <View style={{ alignItems: 'center', marginVertical: 20 }}>
+                        {currentPage ? (
+                            <TouchableOpacity onPress={handleLoadMore} disabled={loading}>
+                                <Text style={{ color: bgButton1, fontSize: 16, fontWeight: '500' }}>Xem thêm</Text>
+                            </TouchableOpacity>
+                        ) : (
+                            <Text style={{ color: 'grey', fontSize: 16, fontWeight: 'bold' }}></Text>
+                        )}
+                    </View>}
             />
 
 

@@ -8,19 +8,18 @@ import MyContext from "../../config/MyContext";
 
 export default function HomeEmployers({ navigation }) {
     const [user, dispatch] = useContext(MyContext)
-    console.log(user)
     const isEmployerComplete = user.employer.company_name !== null &&
         user.employer.company_name !== ""
 
     const isEmployerDocument = user.employer.business_document !== null
 
-    console.log(user)
-
     const manageEmployers = [
-        { id: 1, icon: 'megaphone-outline', title: 'Chiến dịch tuyển dụng', info: user.employer.job_count },
+        { id: 1, icon: 'megaphone-outline', title: 'Chiến dịch tuyển dụng' },
         { id: 2, icon: 'reader-outline', title: 'CV tiếp nhận', info: user.employer.accepted_cv_count },
         { id: 4, icon: 'podium-outline', title: 'Thống kê tuyển dụng' },
         { id: 3, icon: 'exit-outline', title: 'CV ứng tuyển mới', info: user.employer.pending_cv_count },
+        { id: 5, icon: 'card-outline', title: 'Dịch vụ đã áp dụng' },
+
     ]
     const UtilitiesGrid = () => (
         <View style={styles.gridUtili}>
@@ -68,14 +67,16 @@ export default function HomeEmployers({ navigation }) {
                 break;
             case 2:
                 navigation.navigate('CVApply')
-
-                // Navigate to the applied jobs screen or perform other actions
                 break;
             case 3:
                 navigation.navigate('CVApplyNew')
                 break;
             case 4:
                 navigation.navigate('Statistical')
+                break;
+            case 5:
+                navigation.navigate('ServiceList')
+                break
             default:
                 console.log('Unknown item clicked');
                 break;

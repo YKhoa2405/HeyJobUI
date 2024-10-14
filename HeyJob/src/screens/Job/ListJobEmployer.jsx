@@ -14,24 +14,40 @@ import MyContext from "../../config/MyContext";
 import JobReducer, { initialState } from "../../reducer/JobReducer";
 
 export default function ListJobEmployer({ navigation }) {
-    // const [jobs, setJobs] = useState([]);
-
     const [loading, setLoading] = useState(true);
     const [jobs, dispatch] = useReducer(JobReducer, initialState)
+    const [currentPage, setCurrentPage] = useState(1);
 
     moment.locale('vi');
 
-    const fetchJobEmployer = async () => {
+    const fetchJobEmployer = async (page) => {
         try {
             const token = await AsyncStorage.getItem("access-token");
-            const res = await authApi(token).get(endpoints['job_employer_current']);
-            dispatch({ type: 'FETCH_JOBS_SUCCESS', payload: res.data });
+            const res = await authApi(token).get(endpoints['job_employer_current'], {
+                params: {
+                    page: page, // Sử dụng page truyền vào
+                },
+            });
+
+            const jobs = res.data.results;
+            const totalItems = res.data.count;
+            const next = res.data.next;
+            // Dispatch dữ liệu sau khi fetch thành công
+            dispatch({ type: 'FETCH_JOBS_SUCCESS', payload: { jobs, totalItems, next } });
+            // console.log(res.data);
+            // dispatch({ type: 'FETCH_JOBS_SUCCESS', payload: res.data });
             console.log(res.data);
         } catch (error) {
-            console.error("Error fetching jobs:", error);
+            console.log("Error fetching jobs:", error);
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleLoadMore = () => {
+        const nextPage = currentPage + 1; // Tăng trang lên 1
+        setCurrentPage(nextPage); // Cập nhật trang hiện tại
+        fetchJobEmployer(nextPage); // Tải công việc từ trang mới
     };
 
     useEffect(() => {
@@ -127,7 +143,7 @@ export default function ListJobEmployer({ navigation }) {
                     </View>
                     <View style={styleShare.flexBetween}>
                         <View>
-                            <Text>Đã đăng {moment(item.created_at).fromNow()}</Text>
+                            <Text>Đăng lúc {moment(item.created_at).format('DD/MM/YYYY')}</Text>
                             <Text>Hết hạn vào {moment(item.expiration_date).format('DD/MM/YYYY')}</Text>
                         </View>
                         <View>
@@ -150,6 +166,9 @@ export default function ListJobEmployer({ navigation }) {
                 rightIcon={"ellipsis-horizontal"}
                 title={'Chiến dịch tuyển dụng'}
                 handleLeftIcon={() => { navigation.goBack() }} />
+            <View style={{ marginHorizontal: 20, marginTop: 5 }}>
+                <Text style={styleShare.titleJobAndName}>Số lượng: {jobs.jobs.length}</Text>
+            </View>
             <FlatList
                 data={jobs.jobs}
                 renderItem={renderItem}
@@ -161,7 +180,21 @@ export default function ListJobEmployer({ navigation }) {
                         <Text style={{ padding: 20, textAlign: 'center' }}>Bạn không có bất kỳ bài tuyển dụng nào, hãy đăng bài tuyển dụng để tìm kiếm ứng viên tiềm năng</Text>
                     </View>
                 }
-                contentContainerStyle={{ paddingBottom: 40, paddingTop: 10 }}
+                contentContainerStyle={{ paddingBottom: 20, paddingTop: 10 }}
+                ListFooterComponent={
+                    jobs.next ? (
+                        <View style={{ alignItems: 'center', marginVertical: 20 }}>
+                            <TouchableOpacity onPress={handleLoadMore} disabled={loading}>
+                                <Text style={{ color: bgButton1, fontSize: 16, fontWeight: '500' }}>
+                                    Xem thêm
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    ) : (
+                        <View>
+                        </View>
+                    )
+                }
             />
 
         </View>
